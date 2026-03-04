@@ -164,7 +164,7 @@
     </div>
 
     <script>
-        // --- !!! SUPABASE KONFIGURACE (SEM DOPLŇ SVÉ KLÍČE) !!! ---
+        // --- !!! SUPABASE KONFIGURACE (OPRAVENO) !!! ---
         const supabaseUrl = 'https://ypiouidfskzfwuvldwlk.supabase.co'; 
         const supabaseKey = 'sb_publishable_1ErkRGBQ515ESzGuLIgrAQ_sYmV8pr7';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -203,7 +203,8 @@
             
             if(currentUser) {
                 try {
-                    await supabase.from('leaderboard').upsert({ name: currentUser, resets: resets, maxStage: maxStage }, { onConflict: 'name' });
+                    // OPRAVENO: Posíláme do sloupců resets a maxStage
+                    await supabase.from('leaderboard').upsert({ name: currentUser, resets: resets, stage: maxStage }, { onConflict: 'name' });
                 } catch(e) { console.error("Database save failed", e); }
             }
         }
@@ -222,7 +223,7 @@
                 let rank = i + 1;
                 let rClass = rank === 1 ? 'top1' : (rank === 2 ? 'top2' : (rank === 3 ? 'top3' : ''));
                 if(p.name === currentUser) rClass += " my-row";
-                html += `<tr class="${rClass}"><td>${rank}.</td><td>${p.name}</td><td>${p.resets}</td><td>${p.maxStage}</td></tr>`;
+                html += `<tr class="${rClass}"><td>${rank}.</td><td>${p.name}</td><td>${p.resets}</td><td>${p.stage}</td></tr>`;
             });
             document.getElementById('leaderboard-body').innerHTML = html;
         }
@@ -235,7 +236,7 @@
             localStorage.setItem('tt_user_v6', u);
             document.getElementById('login-modal').style.display = 'none';
             document.getElementById('user-display').innerText = "👤 " + u;
-            save(); // První uložení do databáze
+            save(); 
             updateUI();
         }
         function checkAuth() { if(!currentUser) document.getElementById('login-modal').style.display = 'block'; }
@@ -252,7 +253,7 @@
         }
         function closeM() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
 
-        // --- PŘEDMĚTY & OBCHOD (VŠECHNO TVÉ STARÉ LOGIKY) ---
+        // --- PŘEDMĚTY ---
         function generateItem() {
             let type = itemTypes[Math.floor(Math.random() * itemTypes.length)];
             let rRoll = Math.random() * 100, r, sum = 0;
@@ -307,7 +308,7 @@
             if(diamonds >= cost && inv.length < 8) { diamonds -= cost; inv.push(it); shopItems.splice(idx, 1); renderShop(); updateUI(); save(); }
         }
 
-        // --- BOJ & VIZUÁL ---
+        // --- BOJ ---
         function createParticles(x, y) {
             for (let i = 0; i < 6; i++) {
                 const p = document.createElement('div'); p.className = 'particle'; p.style.left = x + 'px'; p.style.top = y + 'px'; document.body.appendChild(p);
@@ -405,4 +406,3 @@
     </script>
 </body>
 </html>
-
