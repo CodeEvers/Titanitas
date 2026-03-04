@@ -17,25 +17,16 @@
         
         #game-area { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
         #monster { font-size: 160px; cursor: pointer; user-select: none; transition: transform 0.05s; z-index: 10; position: relative; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
-        .golden-monster { filter: drop-shadow(0 0 35px #f1c40f) brightness(1.3) !important; }
 
-        .particle { position: absolute; width: 6px; height: 6px; background: #f1c40f; border-radius: 50%; pointer-events: none; z-index: 100; }
         .dmg-text { position: absolute; font-weight: 900; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 101; color: #f1c40f; font-size: 26px; text-shadow: 2px 2px 4px black; }
         @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-130px) scale(1.2); opacity: 0; } }
-        
-        .crit-shake { animation: shake 0.25s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
-        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 5px #ff0000; } 50% { transform: scale(1.05); box-shadow: 0 0 20px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 5px #ff0000; } }
 
-        #action-bar { display: grid; grid-template-columns: repeat(5, 1fr); padding: 0 10px; margin-bottom: 12px; gap: 6px; }
+        #action-bar { display: grid; grid-template-columns: repeat(4, 1fr); padding: 0 10px; margin-bottom: 12px; gap: 6px; }
         .action-btn { padding: 12px 2px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-size: 0.7rem; border-bottom: 4px solid rgba(0,0,0,0.3); transition: transform 0.1s; }
-        .action-btn:active { transform: translateY(2px); border-bottom-width: 2px; }
         .btn-achieve { background: #34495e; }
         .btn-hero { background: #2980b9; }
         .btn-char { background: #8e44ad; }
         .btn-shop { background: #27ae60; }
-        .btn-prestige { background: #c0392b; opacity: 0.3; cursor: not-allowed; }
-        .btn-prestige.ready { opacity: 1; cursor: pointer; animation: pulse 1.5s infinite; }
 
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e1e1e; padding: 20px; border-radius: 15px; border: 2px solid #444; z-index: 2000; width: 340px; max-height: 80vh; overflow-y: auto; box-shadow: 0 0 60px rgba(0,0,0,1); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; margin-bottom: 15px; padding-bottom: 10px; }
@@ -43,40 +34,15 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { background: #222; padding: 10px; text-align: left; font-size: 0.8rem; border-bottom: 2px solid #444; }
         td { padding: 10px; border-bottom: 1px solid #333; font-size: 0.85rem; }
-        .top1 { color: #f1c40f; font-weight: bold; background: rgba(241, 196, 15, 0.05); }
-        .top2 { color: #bdc3c7; }
-        .top3 { color: #cd7f32; }
-        .my-row { background: rgba(142, 68, 173, 0.2) !important; border: 1px solid #8e44ad; }
+        .my-row { background: rgba(142, 68, 173, 0.2) !important; color: #f1c40f; }
 
         .login-form { display: flex; flex-direction: column; gap: 12px; }
         .login-form input { padding: 14px; border-radius: 8px; border: 1px solid #444; background: #000; color: white; font-size: 1rem; }
-
-        .char-grid { display: grid; grid-template-columns: 85px 1fr 85px; gap: 12px; align-items: center; margin-bottom: 20px; }
-        .slot-col { display: flex; flex-direction: column; gap: 10px; }
-        .item-slot { width: 70px; height: 70px; background: #2c3e50; border: 2px dashed #555; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.65rem; cursor: pointer; transition: 0.2s; }
-        .item-slot:hover { border-color: #888; background: #34495e; }
-        .item-slot b { font-size: 1.1rem; }
-
-        .inventory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #111; padding: 12px; border-radius: 10px; margin-top: 15px; }
-        .inv-cell { width: 68px; height: 68px; background: #222; border: 1px solid #333; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .inv-cell:hover { background: #282828; border-color: #555; }
-        
-        .shop-item { background: #2c3e50; padding: 14px; border-radius: 10px; margin-bottom: 12px; border: 2px solid transparent; text-align: left; transition: 0.2s; }
-        .better { border-color: #2ecc71; }
-        .worse { border-color: #e74c3c; }
-        .shop-btn { background: #f1c40f; color: black; border: none; padding: 7px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; float: right; margin-top: -5px; }
-
-        .r-basic { color: #bdc3c7; }
-        .r-rare { color: #3498db; }
-        .r-epic { color: #9b59b6; }
-        .r-legend { color: #f1c40f; text-shadow: 0 0 5px rgba(241,196,15,0.5); }
-        .r-mythic { color: #e74c3c; font-weight: bold; text-shadow: 0 0 8px #ff0000; }
 
         #bottom-panel { background: #161616; border-top: 2px solid #282828; padding: 12px; z-index: 10; }
         .stats-row { display: flex; justify-content: space-around; margin-bottom: 10px; font-size: 0.85rem; }
         .stats-row b { color: #f1c40f; }
         #quick-tap { width: 100%; padding: 15px; background: #27ae60; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; border-bottom: 5px solid #1e8449; font-size: 1rem; }
-        #quick-tap:disabled { background: #444; border-bottom: none; opacity: 0.5; transform: translateY(3px); }
     </style>
 </head>
 <body>
@@ -86,7 +52,7 @@
     <div id="header-hud">
         <div id="stage-header">Stage: 1</div>
         <div class="hp-container"><div id="hp-bar"></div><div id="hp-text">10 / 10</div></div>
-        <div style="font-size: 0.85rem; margin-top: 5px;">💎 Drahokamy: <b id="diamonds-hud">0</b> | <span id="user-display">Hráč</span></div>
+        <div style="font-size: 0.85rem; margin-top: 5px;">💎 Drahokamy: <b id="diamonds-hud">0</b> | <span id="user-display">Načítání...</span></div>
     </div>
 
     <div id="game-area"><div id="monster" onclick="doTap(event)">👹</div></div>
@@ -96,10 +62,9 @@
         <button class="action-btn btn-hero" onclick="openM('heroes-modal')">🛡️ ARMÁDA</button>
         <button class="action-btn btn-char" onclick="openM('char-modal')">👤 POSTAVA</button>
         <button class="action-btn btn-shop" onclick="openM('shop-modal')">🛒 OBCHOD</button>
-        <button id="prestigeBtn" class="action-btn btn-prestige" onclick="doResets()">✨ RESTART</button>
     </div>
 
-    <div id="login-modal" class="modal" style="display:block;">
+    <div id="login-modal" class="modal" style="display:none;">
         <div class="modal-header"><h3>Vítej v Titanitas Online!</h3></div>
         <div class="login-form">
             <p style="font-size: 0.8rem; color: #888;">Zadej své jméno pro globální žebříček.</p>
@@ -117,42 +82,10 @@
         </table>
     </div>
 
-    <div id="char-modal" class="modal">
-        <div class="modal-header"><h3>Vybavení postavy</h3><span style="cursor:pointer; font-size: 24px;" onclick="closeM()">&times;</span></div>
-        <div class="char-grid">
-            <div class="slot-col">
-                <div class="item-slot" id="slot-helma" onclick="unequip('helma')"><span>Helma</span></div>
-                <div class="item-slot" id="slot-hrud" onclick="unequip('hrud')"><span>Hruď</span></div>
-                <div class="item-slot" id="slot-kalhoty" onclick="unequip('kalhoty')"><span>Kalhoty</span></div>
-                <div class="item-slot" id="slot-boty" onclick="unequip('boty')"><span>Boty</span></div>
-            </div>
-            <div class="char-visual" id="char-icon">👤</div>
-            <div class="slot-col">
-                <div class="item-slot" id="slot-nausnice" onclick="unequip('nausnice')"><span>Náušnice</span></div>
-                <div class="item-slot" id="slot-prsten" onclick="unequip('prsten')"><span>Prsten</span></div>
-                <div class="item-slot" id="slot-stit" onclick="unequip('stit')"><span>Štít</span></div>
-                <div class="item-slot" id="slot-mec" onclick="unequip('mec')"><span>Meč</span></div>
-            </div>
-        </div>
-        <h4 style="margin: 10px 0; text-align: left;">Batoh (Inventář)</h4>
-        <div class="inventory-grid" id="inv-grid"></div>
-    </div>
-
-    <div id="shop-modal" class="modal">
-        <div class="modal-header"><h3>Obchodník</h3><span style="cursor:pointer; font-size: 24px;" onclick="closeM()">&times;</span></div>
-        <button onclick="refreshShop()" style="width:100%; margin-bottom:15px; background:#2980b9; border:none; color:white; padding:12px; border-radius:10px; cursor:pointer; font-weight:bold; border-bottom: 3px solid #1c5982;">Obnovit zboží (5 💎)</button>
-        <div id="shop-items"></div>
-    </div>
-
-    <div id="heroes-modal" class="modal">
-        <div class="modal-header"><h3>Najmout hrdiny</h3><span style="cursor:pointer; font-size: 24px;" onclick="closeM()">&times;</span></div>
-        <div id="heroes-list"></div>
-    </div>
-
-    <div id="achieve-modal" class="modal">
-        <div class="modal-header"><h3>Tvé úspěchy</h3><span style="cursor:pointer; font-size: 24px;" onclick="closeM()">&times;</span></div>
-        <div id="achieve-list"></div>
-    </div>
+    <div id="char-modal" class="modal"><div class="modal-header"><h3>Postava</h3><span onclick="closeM()">&times;</span></div></div>
+    <div id="shop-modal" class="modal"><div class="modal-header"><h3>Obchod</h3><span onclick="closeM()">&times;</span></div></div>
+    <div id="heroes-modal" class="modal"><div class="modal-header"><h3>Hrdinové</h3><span onclick="closeM()">&times;</span></div></div>
+    <div id="achieve-modal" class="modal"><div class="modal-header"><h3>Úspěchy</h3><span onclick="closeM()">&times;</span></div></div>
 
     <div id="bottom-panel">
         <div class="stats-row">
@@ -164,77 +97,55 @@
     </div>
 
     <script>
-        // --- SUPABASE KONFIGURACE (Sjednoceno) ---
-        const supabaseUrl = 'https://ypiouidfskzfwuvldwlk.supabase.co'; 
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwaW91aWRmc2t6Znd1dmxkd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Mjg4NzUsImV4cCI6MjA4ODIwNDg3NX0.hwpuuxMdII0uB1HQgu8RN-NFgOBy9UOdU7J9QZsPizA';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        // --- 1. SUPABASE INICIALIZACE (Jen jednou!) ---
+        const _supabaseUrl = 'https://ypiouidfskzfwuvldwlk.supabase.co'; 
+        const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwaW91aWRmc2t6Znd1dmxkd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Mjg4NzUsImV4cCI6MjA4ODIwNDg3NX0.hwpuuxMdII0uB1HQgu8RN-NFgOBy9UOdU7J9QZsPizA';
+        const supabase = window.supabase.createClient(_supabaseUrl, _supabaseKey);
 
-        const heroesCfg = [
-            { n: "🛡️ Strážce Vít", bC: 50, bD: 1 },
-            { n: "🏹 Lučištnice Ema", bC: 250, bD: 8 },
-            { n: "🧙 Mág Merlin", bC: 1200, bD: 45 },
-            { n: "⚔️ Rytíř Roland", bC: 6500, bD: 220 },
-            { n: "🐲 Drak Bezzubka", bC: 45000, bD: 1100 }
-        ];
-        const rarities = [
-            { n: "Basic", c: "r-basic", m: 1, p: 65 },
-            { n: "Rare", c: "r-rare", m: 3, p: 22 },
-            { n: "Epic", c: "r-epic", m: 8, p: 8 },
-            { n: "Legend", c: "r-legend", m: 25, p: 4 },
-            { n: "Mythic", c: "r-mythic", m: 80, p: 1 }
-        ];
-        const itemTypes = ['helma', 'hrud', 'kalhoty', 'boty', 'nausnice', 'prsten', 'stit', 'mec'];
-        
-        // --- STAV HRY ---
+        // --- 2. STAV HRY ---
         let currentUser = localStorage.getItem('tt_user_v6') || null;
         let raw = JSON.parse(localStorage.getItem('ttSave_v6')) || {};
         
         let gold = raw.gold || 0, stage = raw.stage || 1, tapDmg = raw.tapDmg || 1, tapCost = raw.tapCost || 10;
-        let hLv = raw.hLv || [0,0,0,0,0], diamonds = raw.diamonds || 0, resets = raw.resets || 0;
-        let inv = raw.inv || [], eq = raw.eq || {}, shopItems = raw.shopItems || [];
-        let clicks = raw.clicks || 0, kills = raw.kills || 0, maxStage = raw.maxStage || 1;
+        let diamonds = raw.diamonds || 0, clicks = raw.clicks || 0, kills = raw.kills || 0;
+        let mHP = 10, mCurr = 10;
 
-        let mHP = 10, mCurr = 10, totalDPS = 0, totalTap = 1, goldMult = 1, isGolden = false;
-
-        // --- FUNKCE ---
+        // --- 3. JÁDRO LOGIKY ---
         async function save() { 
-            if(stage > maxStage) maxStage = stage;
-            localStorage.setItem('ttSave_v6', JSON.stringify({ gold, stage, tapDmg, tapCost, hLv, diamonds, resets, inv, eq, shopItems, clicks, kills, maxStage })); 
+            localStorage.setItem('ttSave_v6', JSON.stringify({ gold, stage, tapDmg, tapCost, diamonds, clicks, kills })); 
             
             if(currentUser) {
                 try {
-                    // Posíláme pouze sloupce, které existují v databázi (name, gold, stage)
                     await supabase.from('leaderboard').upsert({ 
                         name: currentUser, 
                         gold: Math.floor(gold), 
                         stage: stage 
                     }, { onConflict: 'name' });
-                } catch(e) { console.error("Database save failed", e); }
+                } catch(e) { console.error("Cloud save error:", e); }
             }
         }
 
         async function renderLeaderboard() {
             let filter = document.getElementById('search-player').value.toLowerCase();
-            document.getElementById('leaderboard-body').innerHTML = "<tr><td colspan='4'>Načítám cloud...</td></tr>";
+            let body = document.getElementById('leaderboard-body');
+            body.innerHTML = "<tr><td colspan='4'>Načítám...</td></tr>";
             
             let { data: all, error } = await supabase.from('leaderboard').select('*').order('stage', { ascending: false }).limit(20);
             
-            if(error) return document.getElementById('leaderboard-body').innerHTML = "Chyba připojení k cloudu.";
+            if(error) { body.innerHTML = "Chyba."; return; }
 
             let html = "";
             all.forEach((p, i) => {
                 if(filter && !p.name.toLowerCase().includes(filter)) return;
-                let rank = i + 1;
-                let rClass = rank === 1 ? 'top1' : (rank === 2 ? 'top2' : (rank === 3 ? 'top3' : ''));
-                if(p.name === currentUser) rClass += " my-row";
-                html += `<tr class="${rClass}"><td>${rank}.</td><td>${p.name}</td><td>${p.gold}</td><td>${p.stage}</td></tr>`;
+                let isMe = p.name === currentUser ? "class='my-row'" : "";
+                html += `<tr ${isMe}><td>${i+1}.</td><td>${p.name}</td><td>${p.gold}</td><td>${p.stage}</td></tr>`;
             });
-            document.getElementById('leaderboard-body').innerHTML = html;
+            body.innerHTML = html;
         }
 
         function login() {
             let u = document.getElementById('username-input').value.trim();
-            if(u.length < 3) return alert("Jméno musí mít alespoň 3 znaky!");
+            if(u.length < 3) return alert("Jméno je moc krátké!");
             currentUser = u;
             localStorage.setItem('tt_user_v6', u);
             document.getElementById('login-modal').style.display = 'none';
@@ -244,39 +155,28 @@
         }
 
         function openM(id) { 
-            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+            closeM();
             document.getElementById(id).style.display = 'block';
-            if(id === 'char-modal') renderChar();
-            if(id === 'shop-modal') renderShop();
-            if(id === 'heroes-modal') renderHeroes();
-            if(id === 'achieve-modal') renderAchievements();
             if(id === 'leaderboard-modal') renderLeaderboard();
         }
 
         function closeM() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
 
-        // --- ZBYTEK LOGIKY HRY (BOJ, UPGRADY) ---
-        function setHP() { mHP = Math.round(10 * Math.pow(1.3, stage)) * (stage % 10 === 0 ? 5 : 1); mCurr = mHP; }
+        function setHP() { mHP = Math.round(10 * Math.pow(1.3, stage)); mCurr = mHP; }
         
         function doTap(e) {
-            if(!currentUser) return;
+            if(!currentUser) return openM('login-modal');
             clicks++; 
-            let crit = Math.random() < 0.1; 
-            let dmg = totalTap * (crit ? 5 : 1);
-            mCurr -= dmg; 
+            mCurr -= tapDmg; 
             if(mCurr <= 0) kill();
             
-            // Damage text
-            const d = document.createElement('div'); d.className = 'dmg-text'; d.innerText = (crit ? '💥' : '') + Math.floor(dmg); d.style.left = e.clientX + 'px'; d.style.top = (e.clientY - 50) + 'px'; document.body.appendChild(d); setTimeout(() => d.remove(), 700);
-            
-            document.getElementById('monster').style.transform = 'scale(0.85)'; setTimeout(() => document.getElementById('monster').style.transform = 'scale(1)', 50);
+            const d = document.createElement('div'); d.className = 'dmg-text'; d.innerText = tapDmg; d.style.left = e.clientX + 'px'; d.style.top = (e.clientY - 50) + 'px'; document.body.appendChild(d); setTimeout(() => d.remove(), 700);
             updateUI();
         }
 
         function kill() {
             kills++; 
-            let r = (stage % 10 === 0 ? stage * 25 : stage * 6) * goldMult; 
-            gold += Math.floor(r); 
+            gold += stage * 5; 
             stage++; 
             setHP(); 
             updateUI(); 
@@ -286,10 +186,8 @@
         function buyTap() { if(gold >= tapCost) { gold -= tapCost; tapDmg++; tapCost = Math.round(tapCost * 1.6); updateUI(); save(); } }
 
         function updateUI() {
-            totalTap = tapDmg; // Zjednodušený výpočet pro test
             document.getElementById('gold').innerText = Math.floor(gold);
-            document.getElementById('dps').innerText = Math.floor(totalDPS);
-            document.getElementById('tap-val').innerText = totalTap;
+            document.getElementById('tap-val').innerText = tapDmg;
             document.getElementById('tap-cost').innerText = tapCost;
             document.getElementById('diamonds-hud').innerText = diamonds;
             document.getElementById('hp-bar').style.width = (mCurr / mHP * 100) + "%";
@@ -299,16 +197,15 @@
 
         // --- START ---
         window.onload = () => { 
-            if(currentUser) { 
-                document.getElementById('login-modal').style.display = 'none'; 
+            if(!currentUser) { 
+                document.getElementById('login-modal').style.display = 'block'; 
+                document.getElementById('user-display').innerText = "Nepřihlášen";
+            } else {
                 document.getElementById('user-display').innerText = "👤 " + currentUser; 
             }
             setHP(); 
             updateUI(); 
         };
-        
-        // DPS Smyčka
-        setInterval(() => { if(totalDPS > 0 && currentUser) { mCurr -= totalDPS / 10; if(mCurr <= 0) kill(); updateUI(); } }, 100);
     </script>
 </body>
 </html>
