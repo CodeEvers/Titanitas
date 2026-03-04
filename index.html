@@ -2,14 +2,13 @@
 <html>
 <head>
     <title>Titanitas - Global Hall of Fame Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { text-align: center; font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: background 1.5s ease; }
         
-        /* Horní lišta a Leaderboard ikona */
         #leaderboard-trigger { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.1); border: 2px solid #f1c40f; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; z-index: 100; transition: transform 0.2s; box-shadow: 0 0 15px rgba(241, 196, 15, 0.2); }
         #leaderboard-trigger:hover { transform: scale(1.1); background: rgba(255,255,255,0.2); }
 
-        /* HUD & Monster Section */
         #header-hud { padding-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 10; }
         #stage-header { font-size: 1.1rem; color: #888; font-weight: bold; letter-spacing: 1px; }
         .hp-container { width: 260px; height: 22px; background: #222; border-radius: 8px; position: relative; overflow: hidden; border: 2px solid #333; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
@@ -20,17 +19,14 @@
         #monster { font-size: 160px; cursor: pointer; user-select: none; transition: transform 0.05s; z-index: 10; position: relative; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
         .golden-monster { filter: drop-shadow(0 0 35px #f1c40f) brightness(1.3) !important; }
 
-        /* Particles & Damage Numbers */
         .particle { position: absolute; width: 6px; height: 6px; background: #f1c40f; border-radius: 50%; pointer-events: none; z-index: 100; }
         .dmg-text { position: absolute; font-weight: 900; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 101; color: #f1c40f; font-size: 26px; text-shadow: 2px 2px 4px black; }
         @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-130px) scale(1.2); opacity: 0; } }
         
-        /* Shake & Pulse Effects */
         .crit-shake { animation: shake 0.25s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
         @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 5px #ff0000; } 50% { transform: scale(1.05); box-shadow: 0 0 20px #ff0000; } 100% { transform: scale(1); box-shadow: 0 0 5px #ff0000; } }
 
-        /* Action Bar Buttons */
         #action-bar { display: grid; grid-template-columns: repeat(5, 1fr); padding: 0 10px; margin-bottom: 12px; gap: 6px; }
         .action-btn { padding: 12px 2px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-size: 0.7rem; border-bottom: 4px solid rgba(0,0,0,0.3); transition: transform 0.1s; }
         .action-btn:active { transform: translateY(2px); border-bottom-width: 2px; }
@@ -41,11 +37,9 @@
         .btn-prestige { background: #c0392b; opacity: 0.3; cursor: not-allowed; }
         .btn-prestige.ready { opacity: 1; cursor: pointer; animation: pulse 1.5s infinite; }
 
-        /* Modals & UI Windows */
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e1e1e; padding: 20px; border-radius: 15px; border: 2px solid #444; z-index: 2000; width: 340px; max-height: 80vh; overflow-y: auto; box-shadow: 0 0 60px rgba(0,0,0,1); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; margin-bottom: 15px; padding-bottom: 10px; }
         
-        /* Leaderboard Table */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { background: #222; padding: 10px; text-align: left; font-size: 0.8rem; border-bottom: 2px solid #444; }
         td { padding: 10px; border-bottom: 1px solid #333; font-size: 0.85rem; }
@@ -54,18 +48,15 @@
         .top3 { color: #cd7f32; }
         .my-row { background: rgba(142, 68, 173, 0.2) !important; border: 1px solid #8e44ad; }
 
-        /* Login & Forms */
         .login-form { display: flex; flex-direction: column; gap: 12px; }
         .login-form input { padding: 14px; border-radius: 8px; border: 1px solid #444; background: #000; color: white; font-size: 1rem; }
 
-        /* Character & Gear */
         .char-grid { display: grid; grid-template-columns: 85px 1fr 85px; gap: 12px; align-items: center; margin-bottom: 20px; }
         .slot-col { display: flex; flex-direction: column; gap: 10px; }
         .item-slot { width: 70px; height: 70px; background: #2c3e50; border: 2px dashed #555; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.65rem; cursor: pointer; transition: 0.2s; }
         .item-slot:hover { border-color: #888; background: #34495e; }
         .item-slot b { font-size: 1.1rem; }
 
-        /* Shop & Inventory */
         .inventory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #111; padding: 12px; border-radius: 10px; margin-top: 15px; }
         .inv-cell { width: 68px; height: 68px; background: #222; border: 1px solid #333; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .inv-cell:hover { background: #282828; border-color: #555; }
@@ -75,14 +66,12 @@
         .worse { border-color: #e74c3c; }
         .shop-btn { background: #f1c40f; color: black; border: none; padding: 7px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; float: right; margin-top: -5px; }
 
-        /* Rarity Styles */
         .r-basic { color: #bdc3c7; }
         .r-rare { color: #3498db; }
         .r-epic { color: #9b59b6; }
         .r-legend { color: #f1c40f; text-shadow: 0 0 5px rgba(241,196,15,0.5); }
         .r-mythic { color: #e74c3c; font-weight: bold; text-shadow: 0 0 8px #ff0000; }
 
-        /* Bottom Panel Stats */
         #bottom-panel { background: #161616; border-top: 2px solid #282828; padding: 12px; z-index: 10; }
         .stats-row { display: flex; justify-content: space-around; margin-bottom: 10px; font-size: 0.85rem; }
         .stats-row b { color: #f1c40f; }
@@ -111,17 +100,16 @@
     </div>
 
     <div id="login-modal" class="modal" style="display:block;">
-        <div class="modal-header"><h3>Vítej v Tap Titans!</h3></div>
+        <div class="modal-header"><h3>Vítej v Titanitas Online!</h3></div>
         <div class="login-form">
-            <p style="font-size: 0.8rem; color: #888;">Zadej své jméno pro uložení postupu do globálního žebříčku.</p>
+            <p style="font-size: 0.8rem; color: #888;">Zadej své jméno pro globální žebříček.</p>
             <input type="text" id="username-input" placeholder="Jméno (min. 3 znaky)">
-            <input type="password" id="password-input" placeholder="Heslo (nepovinné)">
             <button onclick="login()" style="padding:15px; background:#27ae60; border:none; color:white; font-weight:bold; cursor:pointer; border-radius:10px;">ZAHÁJIT DOBRODRUŽSTVÍ</button>
         </div>
     </div>
 
     <div id="leaderboard-modal" class="modal">
-        <div class="modal-header"><h3>Síň slávy</h3><span style="cursor:pointer; font-size: 24px;" onclick="closeM()">&times;</span></div>
+        <div class="modal-header"><h3>Globální Síň slávy</h3><span style="cursor:pointer; font-size: 24px;" onclick="closeM()">&times;</span></div>
         <input type="text" id="search-player" placeholder="Hledat hráče..." onkeyup="renderLeaderboard()" style="width:100%; padding:12px; border-radius:8px; border:1px solid #444; background:#111; color:white; box-sizing:border-box; margin-bottom:15px;">
         <table>
             <thead><tr><th>#</th><th>Hrdina</th><th>Resets</th><th>Stage</th></tr></thead>
@@ -148,7 +136,6 @@
         </div>
         <h4 style="margin: 10px 0; text-align: left;">Batoh (Inventář)</h4>
         <div class="inventory-grid" id="inv-grid"></div>
-        <p style="font-size: 0.7rem; color: #777; margin-top: 15px;">Tip: Kliknutím na věc v batohu ji vybavíš. Stornem ji prodáš.</p>
     </div>
 
     <div id="shop-modal" class="modal">
@@ -177,7 +164,11 @@
     </div>
 
     <script>
-        // --- KONFIGURACE ---
+        // --- !!! SUPABASE KONFIGURACE (SEM DOPLŇ SVÉ KLÍČE) !!! ---
+        const supabaseUrl = 'https://ypiouidfbkzfwuvldwlk.supabase.co'; 
+        const supabaseKey = 'sb_publishable_1ErkRGBQ515ESzGuLIgrAQ_sYmV8pr7';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
         const heroesCfg = [
             { n: "🛡️ Strážce Vít", bC: 50, bD: 1 },
             { n: "🏹 Lučištnice Ema", bC: 250, bD: 8 },
@@ -194,15 +185,6 @@
         ];
         const itemTypes = ['helma', 'hrud', 'kalhoty', 'boty', 'nausnice', 'prsten', 'stit', 'mec'];
         
-        let worldFake = [
-            {name: "X-Master", resets: 145, maxStage: 2500},
-            {name: "Kilián", resets: 92, maxStage: 1600},
-            {name: "Shadow", resets: 55, maxStage: 900},
-            {name: "Radek", resets: 42, maxStage: 710},
-            {name: "Lucie", resets: 31, maxStage: 550},
-            {name: "Pepa", resets: 15, maxStage: 280}
-        ];
-
         // --- STAV HRY ---
         let currentUser = localStorage.getItem('tt_user_v6') || null;
         let raw = JSON.parse(localStorage.getItem('ttSave_v6')) || {};
@@ -214,9 +196,35 @@
 
         let mHP = 10, mCurr = 10, totalDPS = 0, totalTap = 1, goldMult = 1, isGolden = false;
 
-        function save() { 
+        // --- CLOUDOVÉ UKLÁDÁNÍ ---
+        async function save() { 
             if(stage > maxStage) maxStage = stage;
             localStorage.setItem('ttSave_v6', JSON.stringify({ gold, stage, tapDmg, tapCost, hLv, diamonds, resets, inv, eq, shopItems, clicks, kills, maxStage })); 
+            
+            if(currentUser) {
+                try {
+                    await supabase.from('leaderboard').upsert({ name: currentUser, resets: resets, maxStage: maxStage }, { onConflict: 'name' });
+                } catch(e) { console.error("Database save failed", e); }
+            }
+        }
+
+        async function renderLeaderboard() {
+            let filter = document.getElementById('search-player').value.toLowerCase();
+            document.getElementById('leaderboard-body').innerHTML = "<tr><td colspan='4'>Načítám cloud...</td></tr>";
+            
+            let { data: all, error } = await supabase.from('leaderboard').select('*').order('resets', { ascending: false }).limit(20);
+            
+            if(error) return document.getElementById('leaderboard-body').innerHTML = "Chyba připojení k cloudu.";
+
+            let html = "";
+            all.forEach((p, i) => {
+                if(filter && !p.name.toLowerCase().includes(filter)) return;
+                let rank = i + 1;
+                let rClass = rank === 1 ? 'top1' : (rank === 2 ? 'top2' : (rank === 3 ? 'top3' : ''));
+                if(p.name === currentUser) rClass += " my-row";
+                html += `<tr class="${rClass}"><td>${rank}.</td><td>${p.name}</td><td>${p.resets}</td><td>${p.maxStage}</td></tr>`;
+            });
+            document.getElementById('leaderboard-body').innerHTML = html;
         }
 
         // --- SYSTÉM PŘIHLÁŠENÍ ---
@@ -227,27 +235,10 @@
             localStorage.setItem('tt_user_v6', u);
             document.getElementById('login-modal').style.display = 'none';
             document.getElementById('user-display').innerText = "👤 " + u;
+            save(); // První uložení do databáze
             updateUI();
         }
         function checkAuth() { if(!currentUser) document.getElementById('login-modal').style.display = 'block'; }
-
-        // --- ŽEBŘÍČEK ---
-        function renderLeaderboard() {
-            let filter = document.getElementById('search-player').value.toLowerCase();
-            let all = [...worldFake, {name: currentUser, resets: resets, maxStage: maxStage}];
-            all.sort((a,b) => b.resets - a.resets || b.maxStage - a.maxStage);
-            
-            let html = "";
-            all.forEach((p, i) => {
-                let rank = i + 1;
-                if(rank > 10 && p.name !== currentUser) return;
-                if(filter && !p.name.toLowerCase().includes(filter)) return;
-                let rClass = rank === 1 ? 'top1' : (rank === 2 ? 'top2' : (rank === 3 ? 'top3' : ''));
-                if(p.name === currentUser) rClass += " my-row";
-                html += `<tr class="${rClass}"><td>${rank}.</td><td>${p.name}</td><td>${p.resets}</td><td>${p.maxStage}</td></tr>`;
-            });
-            document.getElementById('leaderboard-body').innerHTML = html;
-        }
 
         // --- MODÁLY ---
         function openM(id) { 
@@ -261,7 +252,7 @@
         }
         function closeM() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
 
-        // --- PŘEDMĚTY & OBCHOD ---
+        // --- PŘEDMĚTY & OBCHOD (VŠECHNO TVÉ STARÉ LOGIKY) ---
         function generateItem() {
             let type = itemTypes[Math.floor(Math.random() * itemTypes.length)];
             let rRoll = Math.random() * 100, r, sum = 0;
@@ -398,8 +389,6 @@
                     <p>⚔️ Poražených monster: <b style="color:#f1c40f">${kills}</b></p>
                     <p>🗺️ Nejvyšší dosažená Stage: <b style="color:#f1c40f">${maxStage}</b></p>
                     <p>✨ Počet Vzestupů (Resets): <b style="color:#f1c40f">${resets}</b></p>
-                    <hr style="border: 0; border-top: 1px solid #333;">
-                    <p style="font-size: 0.8rem; color: #888;">Pokračuj v boji a tvoje statistiky porostou!</p>
                 </div>`;
         }
 
