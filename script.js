@@ -1,7 +1,7 @@
 // --- KONFIGURACE SUPABASE ---
 const supabaseUrl = 'https://ypiouidfskzfwuvldwlk.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwaW91aWRmc2t6Znd1dmxkd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Mjg4NzUsImV4cCI6MjA4ODIwNDg3NX0.hwpuuxMdII0uB1HQgu8RN-NFgOBy9UOdU7J9QZsPizA';
-const ttClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // --- TVÉ PŮVODNÍ KONFIGURACE ---
 const heroesCfg = [
@@ -175,3 +175,4 @@ window.onload = () => {
     mCurr = mHP;
     updateUI();
 };
+
