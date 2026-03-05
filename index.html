@@ -9,14 +9,21 @@
 </head>
 <body>
     <div id="game-container">
-        <div id="status-bar">
-            <span>Zlato: <span id="gold-display">0</span></span>
-            <span>Stage: <span id="stage-display">1</span></span>
+        <div id="header">
+            <h1>Titanitas</h1>
+            <div id="stats">
+                <span>Zlato: <span id="gold-display">0</span></span> | 
+                <span>Stage: <span id="stage-display">1</span></span>
+            </div>
         </div>
 
-        <div id="enemy-container">
+        <div id="enemy-area">
             <div id="enemy-hp-bar"><div id="enemy-hp-fill"></div></div>
             <div id="enemy-click-area">👻</div>
+        </div>
+
+        <div class="controls">
+            <button onclick="openM()">🏆 ŽEBŘÍČEK</button>
         </div>
 
         <div id="leaderboard-modal" class="modal" style="display:none;">
@@ -25,21 +32,11 @@
                 <h2>Globální Síň slávy</h2>
                 <table>
                     <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Hráč</th>
-                            <th>Resety</th>
-                            <th>Stage</th>
-                        </tr>
+                        <tr><th>#</th><th>Hráč</th><th>Zlato</th><th>Stage</th></tr>
                     </thead>
-                    <tbody id="leaderboard-body">
-                        </tbody>
+                    <tbody id="leaderboard-body"></tbody>
                 </table>
             </div>
-        </div>
-
-        <div class="menu-bar">
-            <button onclick="openM()">🏆 ŽEBŘÍČEK</button>
         </div>
     </div>
 
