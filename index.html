@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Titanitas - Global Hall of Fame</title>
+    <title>Titanitas - Global Hall of Fame Edition</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -14,9 +14,7 @@
     <div id="header-hud">
         <div id="stage-header">Stage: 1</div>
         <div class="hp-container"><div id="hp-bar"></div><div id="hp-text">10 / 10</div></div>
-        <div style="font-size: 0.85rem; margin-top: 5px;">
-            💎 Drahokamy: <b id="diamonds-hud">0</b> | <span id="user-display">Hráč</span>
-        </div>
+        <div style="font-size: 0.85rem; margin-top: 5px;">💎 Drahokamy: <b id="diamonds-hud">0</b> | <span id="user-display">Hráč</span></div>
     </div>
 
     <div id="game-area"><div id="monster" onclick="doTap(event)">👹</div></div>
@@ -26,7 +24,7 @@
         <button class="action-btn btn-hero" onclick="openM('heroes-modal')">🛡️ ARMÁDA</button>
         <button class="action-btn btn-char" onclick="openM('char-modal')">👤 POSTAVA</button>
         <button class="action-btn btn-shop" onclick="openM('shop-modal')">🛒 OBCHOD</button>
-        <button id="prestigeBtn" class="action-btn btn-prestige" onclick="doResets()">✨ RESTART</button>
+        <button id="prestigeBtn" class="action-btn btn-prestige" onclick="doResets()">RESTART (50+)</button>
     </div>
 
     <div id="login-modal" class="modal" style="display:block;">
@@ -34,39 +32,43 @@
         <div class="login-form">
             <p style="font-size: 0.8rem; color: #888;">Zadej své jméno pro globální žebříček.</p>
             <input type="text" id="username-input" placeholder="Jméno (min. 3 znaky)">
-            <button onclick="login()" class="main-btn">ZAHÁJIT DOBRODRUŽSTVÍ</button>
+            <button onclick="login()" style="padding:15px; background:#27ae60; border:none; color:white; font-weight:bold; cursor:pointer; border-radius:10px;">ZAHÁJIT DOBRODRUŽSTVÍ</button>
         </div>
     </div>
 
     <div id="leaderboard-modal" class="modal">
         <div class="modal-header"><h3>Síň slávy</h3><span class="close-x" onclick="closeM()">&times;</span></div>
-        <div id="leaderboard-body-container">
-            <table>
-                <thead><tr><th>#</th><th>Hrdina</th><th>Resets</th><th>Stage</th></tr></thead>
-                <tbody id="leaderboard-body"></tbody>
-            </table>
-        </div>
+        <input type="text" id="search-player" placeholder="Hledat hráče..." onkeyup="renderLeaderboard()" style="width:100%; padding:12px; border-radius:8px; border:1px solid #444; background:#111; color:white; box-sizing:border-box; margin-bottom:15px;">
+        <table>
+            <thead><tr><th>#</th><th>Hrdina</th><th>Resets</th><th>Stage</th></tr></thead>
+            <tbody id="leaderboard-body"></tbody>
+        </table>
     </div>
 
     <div id="char-modal" class="modal">
-        <div class="modal-header"><h3>Vybavení</h3><span class="close-x" onclick="closeM()">&times;</span></div>
+        <div class="modal-header"><h3>Vybavení postavy</h3><span class="close-x" onclick="closeM()">&times;</span></div>
         <div class="char-grid">
             <div class="slot-col">
                 <div class="item-slot" id="slot-helma" onclick="unequip('helma')"><span>Helma</span></div>
                 <div class="item-slot" id="slot-hrud" onclick="unequip('hrud')"><span>Hruď</span></div>
+                <div class="item-slot" id="slot-kalhoty" onclick="unequip('kalhoty')"><span>Kalhoty</span></div>
+                <div class="item-slot" id="slot-boty" onclick="unequip('boty')"><span>Boty</span></div>
             </div>
-            <div id="char-icon" style="font-size: 50px;">👤</div>
+            <div id="char-icon" style="font-size: 60px;">👤</div>
             <div class="slot-col">
+                <div class="item-slot" id="slot-nausnice" onclick="unequip('nausnice')"><span>Náušnice</span></div>
+                <div class="item-slot" id="slot-prsten" onclick="unequip('prsten')"><span>Prsten</span></div>
                 <div class="item-slot" id="slot-stit" onclick="unequip('stit')"><span>Štít</span></div>
                 <div class="item-slot" id="slot-mec" onclick="unequip('mec')"><span>Meč</span></div>
             </div>
         </div>
-        <h4>Batoh (klikni pro vybavení)</h4>
+        <h4 style="text-align: left; margin: 10px 0;">Batoh</h4>
         <div class="inventory-grid" id="inv-grid"></div>
     </div>
 
     <div id="shop-modal" class="modal">
-        <div class="modal-header"><h3>Obchod</h3><span class="close-x" onclick="closeM()">&times;</span></div>
+        <div class="modal-header"><h3>Obchodník</h3><span class="close-x" onclick="closeM()">&times;</span></div>
+        <button onclick="refreshShop()" style="width:100%; margin-bottom:15px; background:#2980b9; border:none; color:white; padding:12px; border-radius:10px; cursor:pointer; font-weight:bold; border-bottom: 3px solid #1c5982;">Obnovit zboží (5 💎)</button>
         <div id="shop-items"></div>
     </div>
 
