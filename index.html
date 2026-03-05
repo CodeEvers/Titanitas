@@ -102,7 +102,7 @@
         <div class="modal-header"><h3>Globální Síň slávy</h3><span style="cursor:pointer; font-size: 24px;" onclick="closeM()">&times;</span></div>
         <div id="leaderboard-loading">Načítám z cloudu...</div>
         <table>
-            <thead><tr><th>#</th><th>Hráč</th><th>Resets</th><th>Stage</th></tr></thead>
+            <thead><tr><th>#</th><th>Hráč</th><th>Zlato</th><th>Stage</th></tr></thead>
             <tbody id="leaderboard-body"></tbody>
         </table>
     </div>
@@ -153,10 +153,10 @@
     </div>
 
     <script>
-        // --- KONFIGURACE SUPABASE ---
+        // --- KONFIGURACE SUPABASE (Opraveno přejmenováním) ---
         const supabaseUrl = 'https://ypiouidfskzfwuvldwlk.supabase.co'; 
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwaW91aWRmc2t6Znd1dmxkd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Mjg4NzUsImV4cCI6MjA4ODIwNDg3NX0.hwpuuxMdII0uB1HQgu8RN-NFgOBy9UOdU7J9QZsPizA';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // --- HERNÍ KONFIGURACE ---
         const heroesCfg = [
@@ -189,9 +189,16 @@
         async function save() { 
             if(stage > maxStage) maxStage = stage;
             localStorage.setItem('ttSave_v6', JSON.stringify({ gold, stage, tapDmg, tapCost, hLv, diamonds, resets, inv, eq, shopItems, clicks, kills, maxStage })); 
-            // Cloud save
+            
+            // Cloud save do tvé tabulky leaderboard
             if(currentUser) {
-                await supabase.from('leaderboard').upsert({ name: currentUser, resets: resets, stage: maxStage }, { onConflict: 'name' });
+                try {
+                    await supabaseClient.from('leaderboard').upsert({ 
+                        name: currentUser, 
+                        gold: Math.floor(gold), 
+                        stage: stage 
+                    }, { onConflict: 'name' });
+                } catch (e) { console.error("DB Save Error", e); }
             }
         }
 
@@ -208,10 +215,14 @@
         }
         function checkAuth() { if(!currentUser) document.getElementById('login-modal').style.display = 'block'; }
 
-        // --- GLOBÁLNÍ ŽEBŘÍČEK (Supabase) ---
+        // --- GLOBÁLNÍ ŽEBŘÍČEK (Opraveno na tvé sloupce) ---
         async function renderLeaderboard() {
             document.getElementById('leaderboard-loading').style.display = "block";
-            let { data, error } = await supabase.from('leaderboard').select('*').order('resets', { ascending: false }).order('stage', { ascending: false }).limit(20);
+            let { data, error } = await supabaseClient
+                .from('leaderboard')
+                .select('*')
+                .order('stage', { ascending: false })
+                .limit(20);
             
             if(error) return console.error(error);
             document.getElementById('leaderboard-loading').style.display = "none";
@@ -221,7 +232,7 @@
                 let rank = i + 1;
                 let rClass = rank === 1 ? 'top1' : (rank === 2 ? 'top2' : (rank === 3 ? 'top3' : ''));
                 if(p.name === currentUser) rClass += " my-row";
-                html += `<tr class="${rClass}"><td>${rank}.</td><td>${p.name}</td><td>${p.resets}</td><td>${p.stage}</td></tr>`;
+                html += `<tr class="${rClass}"><td>${rank}.</td><td>${p.name}</td><td>${p.gold}</td><td>${p.stage}</td></tr>`;
             });
             document.getElementById('leaderboard-body').innerHTML = html;
         }
