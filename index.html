@@ -153,9 +153,11 @@
     </div>
 
     <script>
-        // --- KONFIGURACE SUPABASE (Opraveno přejmenováním) ---
+        // --- KONFIGURACE SUPABASE (Opraveno přejmenováním, aby nekolidovalo s knihovnou) ---
         const supabaseUrl = 'https://ypiouidfskzfwuvldwlk.supabase.co'; 
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwaW91aWRmc2t6Znd1dmxkd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Mjg4NzUsImV4cCI6MjA4ODIwNDg3NX0.hwpuuxMdII0uB1HQgu8RN-NFgOBy9UOdU7J9QZsPizA';
+        
+        // Důležitá změna: proměnná se jmenuje supabaseClient
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // --- HERNÍ KONFIGURACE ---
@@ -190,7 +192,7 @@
             if(stage > maxStage) maxStage = stage;
             localStorage.setItem('ttSave_v6', JSON.stringify({ gold, stage, tapDmg, tapCost, hLv, diamonds, resets, inv, eq, shopItems, clicks, kills, maxStage })); 
             
-            // Cloud save do tvé tabulky leaderboard
+            // OPRAVENO: Cloud save nyní používá správné názvy sloupců (gold, stage)
             if(currentUser) {
                 try {
                     await supabaseClient.from('leaderboard').upsert({ 
@@ -215,7 +217,7 @@
         }
         function checkAuth() { if(!currentUser) document.getElementById('login-modal').style.display = 'block'; }
 
-        // --- GLOBÁLNÍ ŽEBŘÍČEK (Opraveno na tvé sloupce) ---
+        // --- GLOBÁLNÍ ŽEBŘÍČEK ---
         async function renderLeaderboard() {
             document.getElementById('leaderboard-loading').style.display = "block";
             let { data, error } = await supabaseClient
