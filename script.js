@@ -42,18 +42,19 @@ function save() {
 async function saveToCloud() {
     if(!currentUser) return;
     try {
-        const fullData = save(); // Získáme aktuální data
+        const fullData = save();
         await supabaseClient.from('leaderboard').upsert({
             name: currentUser, 
             stage: maxStage, 
             resets: resets, 
             gold: Math.floor(gold),
-            save_data: fullData // ULOŽÍME VŠECHNO (Hrdiny, Equip, atd.)
+            diamonds: diamonds,
+            save_data: fullData 
         }, { onConflict: 'name' });
     } catch (e) { console.error("Cloud save failed", e); }
 }
 
-// --- PŘIHLÁŠENÍ S FULL-SYNC ---
+// --- SYSTÉM PŘIHLÁŠENÍ ---
 async function login() {
     let u = document.getElementById('username-input').value.trim();
     if(u.length < 3) return alert("Jméno musí mít alespoň 3 znaky!");
@@ -70,38 +71,35 @@ async function login() {
             currentUser = u;
             localStorage.setItem('tt_user_v6', u);
             
-            // NAČTENÍ KOMPLETNÍCH DAT Z CLOUDU
             if (player.save_data) {
                 const s = player.save_data;
                 gold = s.gold; stage = s.stage; tapDmg = s.tapDmg; tapCost = s.tapCost;
-                hLv = s.hLv; diamonds = s.diamonds; resets = s.resets;
-                inv = s.inv; eq = s.eq; shopItems = s.shopItems || [];
-                clicks = s.clicks; kills = s.kills; maxStage = s.maxStage;
-            } else {
-                // Záložní načtení pokud save_data neexistuje
-                stage = player.stage || 1;
-                resets = player.resets || 0;
-                gold = Number(player.gold) || 0;
+                hLv = s.hLv; resets = s.resets; inv = s.inv; eq = s.eq; 
+                shopItems = s.shopItems || []; clicks = s.clicks; kills = s.kills; maxStage = s.maxStage;
+                // Přednost mají diamanty ze samostatného sloupce pro snadnou editaci
+                diamonds = (player.diamonds !== undefined && player.diamonds !== null) ? player.diamonds : (s.diamonds || 0);
             }
             
             document.getElementById('login-modal').style.display = 'none';
             document.getElementById('user-display').innerText = "👤 " + u;
-            
             setHP(); updateBiome(); updateUI(); save();
-            alert("Všechna data (včetně hrdinů a vybavení) byla stažena!");
+            alert("Data úspěšně načtena z cloudu!");
         } else {
             alert("Chybné heslo!");
         }
     } else {
         let newPass = prompt(`Nový hrdina ${u}! Vytvoř si heslo:`);
-        if(!newPass || newPass.length < 3) return alert("Krátké heslo!");
-
+        if(!newPass || newPass.length < 3) return alert("Heslo je příliš krátké!");
         currentUser = u;
         localStorage.setItem('tt_user_v6', u);
-        await saveToCloud(); // Vytvoří záznam se současným stavem
+        // Prvotní uložení vytvoří záznam s heslem v DB
+        const { error: insErr } = await supabaseClient.from('leaderboard').insert([
+            { name: u, password: newPass, stage: stage, resets: resets, gold: Math.floor(gold), diamonds: diamonds }
+        ]);
+        if(insErr) return alert("Chyba při registraci!");
         document.getElementById('login-modal').style.display = 'none';
         document.getElementById('user-display').innerText = "👤 " + u;
-        updateUI();
+        saveToCloud(); updateUI();
     }
 }
 
@@ -122,22 +120,35 @@ function doTap(e) {
     if(!currentUser) return checkAuth();
     clicks++; let crit = Math.random() < 0.1; let dmg = totalTap * (crit ? 5 : 1);
     mCurr -= dmg;
-    
     const d = document.createElement('div'); d.className = 'dmg-text'; d.innerText = (crit ? '💥' : '') + Math.floor(dmg); d.style.left = e.clientX + 'px'; d.style.top = (e.clientY - 50) + 'px'; document.body.appendChild(d); setTimeout(() => d.remove(), 700);
     createParticles(e.clientX, e.clientY);
-    
     if(crit) { document.getElementById('game-area').classList.add('crit-shake'); setTimeout(() => document.getElementById('game-area').classList.remove('crit-shake'), 250); }
     document.getElementById('monster').style.transform = 'scale(0.85)'; setTimeout(() => document.getElementById('monster').style.transform = 'scale(1)', 50);
-
     if(mCurr <= 0) kill();
     updateUI();
 }
 
 function kill() {
-    kills++; let r = (stage % 10 === 0 ? stage * 25 : stage * 6) * goldMult; if(isGolden) r *= 10;
-    gold += Math.floor(r); stage++; isGolden = Math.random() < 0.01;
-    document.getElementById('monster').innerText = isGolden ? '💰' : ['👹','💀','👽','🤖','🐲','👻','👾','🎃','🧛','🧟'][Math.floor(Math.random()*10)];
-    document.getElementById('monster').className = isGolden ? 'golden-monster' : '';
+    kills++; 
+    // VÝPOČET ODMĚNY: Pokud je potvora zlatá, dá 10x víc
+    let reward = (stage % 10 === 0 ? stage * 25 : stage * 6) * goldMult; 
+    if(isGolden) reward *= 10;
+    
+    gold += Math.floor(reward); 
+    stage++; 
+
+    // ŠANCE NA ZLATOU PŘÍŠERU (1%)
+    isGolden = Math.random() < 0.01;
+
+    const m = document.getElementById('monster');
+    if(isGolden) {
+        m.innerText = '💰';
+        m.classList.add('golden-monster');
+    } else {
+        m.innerText = ['👹','💀','👽','🤖','🐲','👻','👾','🎃','🧛','🧟'][Math.floor(Math.random()*10)];
+        m.classList.remove('golden-monster');
+    }
+
     setHP(); updateBiome(); updateUI(); save();
 }
 
@@ -145,7 +156,7 @@ function setHP() { mHP = Math.round(10 * Math.pow(1.3, stage)) * (stage % 10 ===
 function updateBiome() { document.body.style.background = ['#0a0a0a', '#1e3a1e', '#3e2a1a', '#2c3e50', '#4a1a1a'][Math.min(Math.floor((stage-1)/10), 4)]; }
 function buyTap() { if(gold >= tapCost) { gold -= tapCost; tapDmg++; tapCost = Math.round(tapCost * 1.6); updateUI(); save(); } }
 
-// --- MODÁLY & SYSTÉMY ---
+// --- MODÁLY A SYSTÉMY ---
 function openM(id) {
     document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
     document.getElementById(id).style.display = 'block';
@@ -161,7 +172,6 @@ async function renderLeaderboard() {
     let filter = document.getElementById('search-player').value.toLowerCase();
     let { data, error } = await supabaseClient.from('leaderboard').select('*').order('resets', {ascending: false}).limit(20);
     if(error) return;
-    
     document.getElementById('leaderboard-body').innerHTML = data
         .filter(p => p.name.toLowerCase().includes(filter))
         .map((p, i) => {
@@ -253,7 +263,6 @@ function updateUI() {
     Object.values(eq).forEach(i => { if (i.effect === "Tap DMG") gTap += i.power; if (i.effect === "Hero DPS") gDPS += i.power; if (i.effect === "Gold %") gGold += (i.power / 100); });
     let bDPS = 0; hLv.forEach((l, i) => bDPS += l * heroesCfg[i].bD);
     totalTap = tapDmg + gTap; totalDPS = bDPS + gDPS; goldMult = gGold;
-
     document.getElementById('gold').innerText = Math.floor(gold);
     document.getElementById('dps').innerText = Math.floor(totalDPS);
     document.getElementById('tap-val').innerText = totalTap;
@@ -262,16 +271,14 @@ function updateUI() {
     document.getElementById('hp-bar').style.width = (mCurr / mHP * 100) + "%";
     document.getElementById('hp-text').innerText = Math.ceil(mCurr) + " / " + mHP;
     document.getElementById('stage-header').innerHTML = stage % 10 === 0 ? `<span style="color:#ff4d4d">⚠️ BOSS: ${stage} ⚠️</span>` : `Stage: ${stage}`;
-    
     let pBtn = document.getElementById('prestigeBtn');
     if(stage >= 50) { pBtn.classList.add('ready'); pBtn.innerText = `✨ VZESTUP (+${Math.floor(stage/10)} 💎)`; }
     else { pBtn.classList.remove('ready'); pBtn.innerText = "RESTART (50+)"; }
-    document.getElementById('quick-tap').disabled = gold < tapCost;
 }
 
 // --- SMYČKY ---
 setInterval(() => { if(totalDPS > 0 && currentUser) { mCurr -= totalDPS / 10; if(mCurr <= 0) kill(); updateUI(); } }, 100);
-setInterval(saveToCloud, 30000); // Každých 30s se vše uloží na cloud
+setInterval(saveToCloud, 30000);
 
 window.onload = () => {
     if(currentUser) {
