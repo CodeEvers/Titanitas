@@ -46,17 +46,55 @@ async function saveToCloud() {
     } catch (e) { console.error("Cloud save failed", e); }
 }
 
-// --- SYSTÉM PŘIHLÁŠENÍ ---
-function login() {
+// --- UPRAVENÝ SYSTÉM PŘIHLÁŠENÍ S HESLEM ---
+async function login() {
     let u = document.getElementById('username-input').value.trim();
     if(u.length < 3) return alert("Jméno musí mít alespoň 3 znaky!");
-    currentUser = u;
-    localStorage.setItem('tt_user_v6', u);
-    document.getElementById('login-modal').style.display = 'none';
-    document.getElementById('user-display').innerText = "👤 " + u;
-    saveToCloud();
-    updateUI();
+
+    // 1. Zkusíme najít hráče na cloudu
+    const { data: player, error } = await supabaseClient
+        .from('leaderboard')
+        .select('*')
+        .eq('name', u)
+        .maybeSingle();
+
+    if (player) {
+        // Hráč existuje -> Vyžádáme heslo
+        let pass = prompt(`Vítej zpět, ${u}! Zadej své heslo:`);
+        if (pass === player.password) {
+            currentUser = u;
+            // Pokud chceme, můžeme zde synchronizovat data z cloudu do hry:
+            // stage = player.stage; resets = player.resets;
+            localStorage.setItem('tt_user_v6', u);
+            document.getElementById('login-modal').style.display = 'none';
+            document.getElementById('user-display').innerText = "👤 " + u;
+            alert("Přihlášení úspěšné!");
+            updateUI();
+        } else {
+            alert("Chybné heslo pro tohoto hrdinu!");
+        }
+    } else {
+        // Nový hráč -> Registrace
+        let newPass = prompt(`Hrdina ${u} je volný! Vytvoř si heslo pro zabezpečení účtu:`);
+        if(!newPass || newPass.length < 3) return alert("Heslo musí mít alespoň 3 znaky!");
+
+        const { error: insErr } = await supabaseClient
+            .from('leaderboard')
+            .insert([{ name: u, password: newPass, stage: stage, resets: resets, gold: Math.floor(gold) }]);
+
+        if (insErr) {
+            alert("Chyba při registraci. Zkus jiné jméno.");
+        } else {
+            currentUser = u;
+            localStorage.setItem('tt_user_v6', u);
+            document.getElementById('login-modal').style.display = 'none';
+            document.getElementById('user-display').innerText = "👤 " + u;
+            alert("Účet vytvořen a zabezpečen!");
+            updateUI();
+        }
+    }
 }
+
 function checkAuth() { if(!currentUser) document.getElementById('login-modal').style.display = 'block'; }
 
 // --- BOJ A VIZUÁL ---
@@ -71,7 +109,7 @@ function createParticles(x, y) {
 }
 
 function doTap(e) {
-    if(!currentUser) return;
+    if(!currentUser) return checkAuth();
     clicks++; let crit = Math.random() < 0.1; let dmg = totalTap * (crit ? 5 : 1);
     mCurr -= dmg;
     
@@ -229,6 +267,8 @@ window.onload = () => {
     if(currentUser) {
         document.getElementById('login-modal').style.display = 'none';
         document.getElementById('user-display').innerText = "👤 " + currentUser;
+    } else {
+        checkAuth();
     }
     setHP(); updateBiome(); updateUI();
 };
