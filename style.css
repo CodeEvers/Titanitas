@@ -1,6 +1,5 @@
 body { text-align: center; font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: background 1.5s ease; }
 
-/* UI PRVKY */
 #leaderboard-trigger { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.1); border: 2px solid #f1c40f; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; z-index: 100; box-shadow: 0 0 15px rgba(241, 196, 15, 0.2); transition: transform 0.2s; }
 #leaderboard-trigger:hover { transform: scale(1.1); }
 
@@ -13,14 +12,12 @@ body { text-align: center; font-family: 'Segoe UI', sans-serif; background: #0a0
 #monster { font-size: 140px; cursor: pointer; user-select: none; transition: transform 0.05s; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
 .golden-monster { filter: drop-shadow(0 0 35px #f1c40f) brightness(1.3) !important; }
 
-/* EFEKTY */
 .dmg-text { position: absolute; font-weight: 900; pointer-events: none; animation: floatUp 0.8s ease-out forwards; color: #f1c40f; font-size: 26px; text-shadow: 2px 2px 4px black; z-index: 1000; }
 @keyframes floatUp { 0% { transform: translateY(0) opacity: 1; } 100% { transform: translateY(-120px) opacity: 0; } }
 
 .crit-shake { animation: shake 0.2s; }
 @keyframes shake { 0% { transform: translate(2px, 1px); } 50% { transform: translate(-2px, -1px); } 100% { transform: translate(0); } }
 
-/* TLAČÍTKA A PANELY */
 #action-bar { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px; gap: 5px; }
 .action-btn { padding: 10px 2px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-size: 0.65rem; border-bottom: 4px solid rgba(0,0,0,0.3); }
 .btn-achieve { background: #34495e; }
@@ -32,20 +29,16 @@ body { text-align: center; font-family: 'Segoe UI', sans-serif; background: #0a0
 
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(192, 57, 43, 0); } 100% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0); } }
 
-/* MODÁLY */
 .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e1e1e; padding: 20px; border-radius: 15px; border: 2px solid #444; z-index: 2000; width: 340px; max-height: 80vh; overflow-y: auto; box-shadow: 0 0 50px black; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; margin-bottom: 15px; }
 .close-x { cursor: pointer; font-size: 24px; color: #888; }
-
 .main-btn { width: 100%; padding: 15px; background: #27ae60; border: none; color: white; font-weight: bold; border-radius: 10px; cursor: pointer; margin-top: 10px; }
 
-/* INVENTÁŘ */
 .char-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; gap: 10px; }
 .item-slot { width: 70px; height: 70px; background: #2c3e50; border: 2px dashed #555; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; cursor: pointer; }
 .inventory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 10px; }
-.inv-cell { width: 70px; height: 70px; background: #111; border: 1px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.inv-cell { width: 70px; height: 70px; background: #111; border: 1px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.7rem;}
 
-/* RARITY */
 .r-basic { color: #bdc3c7; }
 .r-rare { color: #3498db; }
 .r-epic { color: #9b59b6; }
@@ -57,3 +50,11 @@ body { text-align: center; font-family: 'Segoe UI', sans-serif; background: #0a0
 .stats-row b { color: #f1c40f; }
 #quick-tap { width: 100%; padding: 15px; background: #27ae60; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; border-bottom: 4px solid #1e8449; }
 #quick-tap:disabled { opacity: 0.5; cursor: not-allowed; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th { background: #222; padding: 10px; text-align: left; font-size: 0.8rem; border-bottom: 2px solid #444; }
+td { padding: 10px; border-bottom: 1px solid #333; font-size: 0.85rem; }
+.my-row { background: rgba(142, 68, 173, 0.2) !important; border: 1px solid #8e44ad; }
+
+.login-form { display: flex; flex-direction: column; gap: 12px; }
+.login-form input { padding: 14px; border-radius: 8px; border: 1px solid #444; background: #000; color: white; font-size: 1rem; }
