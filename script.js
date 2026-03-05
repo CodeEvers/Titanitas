@@ -76,7 +76,6 @@ async function login() {
                 gold = s.gold; stage = s.stage; tapDmg = s.tapDmg; tapCost = s.tapCost;
                 hLv = s.hLv; resets = s.resets; inv = s.inv; eq = s.eq; 
                 shopItems = s.shopItems || []; clicks = s.clicks; kills = s.kills; maxStage = s.maxStage;
-                // Přednost mají diamanty ze samostatného sloupce pro snadnou editaci
                 diamonds = (player.diamonds !== undefined && player.diamonds !== null) ? player.diamonds : (s.diamonds || 0);
             }
             
@@ -92,7 +91,6 @@ async function login() {
         if(!newPass || newPass.length < 3) return alert("Heslo je příliš krátké!");
         currentUser = u;
         localStorage.setItem('tt_user_v6', u);
-        // Prvotní uložení vytvoří záznam s heslem v DB
         const { error: insErr } = await supabaseClient.from('leaderboard').insert([
             { name: u, password: newPass, stage: stage, resets: resets, gold: Math.floor(gold), diamonds: diamonds }
         ]);
@@ -130,16 +128,11 @@ function doTap(e) {
 
 function kill() {
     kills++; 
-    // VÝPOČET ODMĚNY: Pokud je potvora zlatá, dá 10x víc
     let reward = (stage % 10 === 0 ? stage * 25 : stage * 6) * goldMult; 
     if(isGolden) reward *= 10;
-    
     gold += Math.floor(reward); 
     stage++; 
-
-    // ŠANCE NA ZLATOU PŘÍŠERU (1%)
     isGolden = Math.random() < 0.01;
-
     const m = document.getElementById('monster');
     if(isGolden) {
         m.innerText = '💰';
@@ -148,13 +141,36 @@ function kill() {
         m.innerText = ['👹','💀','👽','🤖','🐲','👻','👾','🎃','🧛','🧟'][Math.floor(Math.random()*10)];
         m.classList.remove('golden-monster');
     }
-
     setHP(); updateBiome(); updateUI(); save();
 }
 
 function setHP() { mHP = Math.round(10 * Math.pow(1.3, stage)) * (stage % 10 === 0 ? 5 : 1); mCurr = mHP; }
 function updateBiome() { document.body.style.background = ['#0a0a0a', '#1e3a1e', '#3e2a1a', '#2c3e50', '#4a1a1a'][Math.min(Math.floor((stage-1)/10), 4)]; }
-function buyTap() { if(gold >= tapCost) { gold -= tapCost; tapDmg++; tapCost = Math.round(tapCost * 1.6); updateUI(); save(); } }
+
+// --- UPRAVENÁ FUNKCE S MILNÍKEM ---
+function buyTap() { 
+    if(gold >= tapCost) { 
+        gold -= tapCost; 
+        tapDmg++; 
+
+        // Bonus +10 DMG každých 10 vylepšení
+        if (tapDmg % 10 === 0) {
+            tapDmg += 10;
+            const d = document.createElement('div');
+            d.className = 'dmg-text';
+            d.style.color = '#f1c40f';
+            d.style.left = '50%';
+            d.style.top = '40%';
+            d.innerText = "MILNÍK: +10 DMG! ✨";
+            document.body.appendChild(d);
+            setTimeout(() => d.remove(), 1000);
+        }
+
+        tapCost = Math.round(tapCost * 1.6); 
+        updateUI(); 
+        save(); 
+    } 
+}
 
 // --- MODÁLY A SYSTÉMY ---
 function openM(id) {
