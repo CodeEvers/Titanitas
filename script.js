@@ -34,19 +34,26 @@ let mHP = 10, mCurr = 10, totalDPS = 0, totalTap = 1, goldMult = 1, isGolden = f
 // --- UKLÁDÁNÍ ---
 function save() { 
     if(stage > maxStage) maxStage = stage;
-    localStorage.setItem('ttSave_v6', JSON.stringify({ gold, stage, tapDmg, tapCost, hLv, diamonds, resets, inv, eq, shopItems, clicks, kills, maxStage })); 
+    const saveObj = { gold, stage, tapDmg, tapCost, hLv, diamonds, resets, inv, eq, shopItems, clicks, kills, maxStage };
+    localStorage.setItem('ttSave_v6', JSON.stringify(saveObj)); 
+    return saveObj;
 }
 
 async function saveToCloud() {
     if(!currentUser) return;
     try {
+        const fullData = save(); // Získáme aktuální data
         await supabaseClient.from('leaderboard').upsert({
-            name: currentUser, stage: maxStage, resets: resets, gold: Math.floor(gold)
+            name: currentUser, 
+            stage: maxStage, 
+            resets: resets, 
+            gold: Math.floor(gold),
+            save_data: fullData // ULOŽÍME VŠECHNO (Hrdiny, Equip, atd.)
         }, { onConflict: 'name' });
     } catch (e) { console.error("Cloud save failed", e); }
 }
 
-// --- SYSTÉM PŘIHLÁŠENÍ S NAČÍTÁNÍM DAT ---
+// --- PŘIHLÁŠENÍ S FULL-SYNC ---
 async function login() {
     let u = document.getElementById('username-input').value.trim();
     if(u.length < 3) return alert("Jméno musí mít alespoň 3 znaky!");
@@ -63,42 +70,38 @@ async function login() {
             currentUser = u;
             localStorage.setItem('tt_user_v6', u);
             
-            // NAČTENÍ DAT Z CLOUDU DO PROMĚNNÝCH
-            stage = player.stage || 1;
-            resets = player.resets || 0;
-            gold = Number(player.gold) || 0;
-            maxStage = player.stage || 1;
+            // NAČTENÍ KOMPLETNÍCH DAT Z CLOUDU
+            if (player.save_data) {
+                const s = player.save_data;
+                gold = s.gold; stage = s.stage; tapDmg = s.tapDmg; tapCost = s.tapCost;
+                hLv = s.hLv; diamonds = s.diamonds; resets = s.resets;
+                inv = s.inv; eq = s.eq; shopItems = s.shopItems || [];
+                clicks = s.clicks; kills = s.kills; maxStage = s.maxStage;
+            } else {
+                // Záložní načtení pokud save_data neexistuje
+                stage = player.stage || 1;
+                resets = player.resets || 0;
+                gold = Number(player.gold) || 0;
+            }
             
             document.getElementById('login-modal').style.display = 'none';
             document.getElementById('user-display').innerText = "👤 " + u;
             
-            // AKTUALIZACE STAVU HRY
-            setHP(); 
-            updateBiome();
-            updateUI();
-            save(); // Uložení stažených dat do lokální paměti
-            alert(`Úspěšně načteno! Pokračuješ ze Stage ${stage}.`);
+            setHP(); updateBiome(); updateUI(); save();
+            alert("Všechna data (včetně hrdinů a vybavení) byla stažena!");
         } else {
-            alert("Chybné heslo pro tohoto hrdinu!");
+            alert("Chybné heslo!");
         }
     } else {
-        let newPass = prompt(`Hrdina ${u} je volný! Vytvoř si heslo pro zabezpečení účtu:`);
-        if(!newPass || newPass.length < 3) return alert("Heslo musí mít alespoň 3 znaky!");
+        let newPass = prompt(`Nový hrdina ${u}! Vytvoř si heslo:`);
+        if(!newPass || newPass.length < 3) return alert("Krátké heslo!");
 
-        const { error: insErr } = await supabaseClient
-            .from('leaderboard')
-            .insert([{ name: u, password: newPass, stage: stage, resets: resets, gold: Math.floor(gold) }]);
-
-        if (insErr) {
-            alert("Chyba při registraci. Zkus jiné jméno.");
-        } else {
-            currentUser = u;
-            localStorage.setItem('tt_user_v6', u);
-            document.getElementById('login-modal').style.display = 'none';
-            document.getElementById('user-display').innerText = "👤 " + u;
-            alert("Účet vytvořen a zabezpečen!");
-            updateUI();
-        }
+        currentUser = u;
+        localStorage.setItem('tt_user_v6', u);
+        await saveToCloud(); // Vytvoří záznam se současným stavem
+        document.getElementById('login-modal').style.display = 'none';
+        document.getElementById('user-display').innerText = "👤 " + u;
+        updateUI();
     }
 }
 
@@ -268,7 +271,7 @@ function updateUI() {
 
 // --- SMYČKY ---
 setInterval(() => { if(totalDPS > 0 && currentUser) { mCurr -= totalDPS / 10; if(mCurr <= 0) kill(); updateUI(); } }, 100);
-setInterval(saveToCloud, 30000);
+setInterval(saveToCloud, 30000); // Každých 30s se vše uloží na cloud
 
 window.onload = () => {
     if(currentUser) {
