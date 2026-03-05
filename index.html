@@ -2,81 +2,96 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Titanitas - Global Edition</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script src="script.js" defer></script>
+
     <style>
-        body { text-align: center; font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: background 1.5s ease; }
-        #leaderboard-trigger { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.1); border: 2px solid #f1c40f; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; z-index: 100; transition: transform 0.2s; box-shadow: 0 0 15px rgba(241, 196, 15, 0.2); }
-        #header-hud { padding-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 10; }
-        #stage-header { font-size: 1.1rem; color: #888; font-weight: bold; }
-        .hp-container { width: 260px; height: 22px; background: #222; border-radius: 8px; position: relative; overflow: hidden; border: 2px solid #333; }
-        #hp-bar { width: 100%; height: 100%; background: linear-gradient(180deg, #ff5f6d, #ffc371); transition: width 0.1s; }
-        #hp-text { position: absolute; width: 100%; top: 50%; left: 0; transform: translateY(-50%); font-weight: bold; font-size: 12px; text-shadow: 1px 1px 2px black; }
+        body { text-align: center; font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* Horní HUD */
+        #header-hud { padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; background: rgba(0,0,0,0.5); }
+        #stage-header { font-size: 1.2rem; color: #f1c40f; font-weight: bold; }
+        
+        .hp-container { width: 280px; height: 25px; background: #222; border-radius: 12px; position: relative; overflow: hidden; border: 2px solid #444; }
+        #hp-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #ff5f6d, #ffc371); transition: width 0.2s; }
+        
+        /* Herní plocha */
         #game-area { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
-        #monster { font-size: 160px; cursor: pointer; user-select: none; transition: transform 0.05s; z-index: 10; }
-        .dmg-text { position: absolute; font-weight: 900; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 101; color: #f1c40f; font-size: 26px; text-shadow: 2px 2px 4px black; }
-        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-130px); opacity: 0; } }
-        #action-bar { display: grid; grid-template-columns: repeat(4, 1fr); padding: 0 10px; margin-bottom: 12px; gap: 6px; }
-        .action-btn { padding: 12px 2px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-size: 0.7rem; }
-        .btn-achieve { background: #34495e; } .btn-hero { background: #2980b9; } .btn-char { background: #8e44ad; } .btn-shop { background: #27ae60; }
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e1e1e; padding: 20px; border-radius: 15px; border: 2px solid #444; z-index: 2000; width: 340px; max-height: 80vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; margin-bottom: 15px; padding-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; }
-        td, th { padding: 8px; border-bottom: 1px solid #333; text-align: left; }
-        .my-row { background: rgba(142, 68, 173, 0.2); }
-        #bottom-panel { background: #161616; border-top: 2px solid #282828; padding: 12px; }
-        .stats-row { display: flex; justify-content: space-around; margin-bottom: 10px; font-size: 0.85rem; }
-        #quick-tap { width: 100%; padding: 15px; background: #27ae60; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; }
+        #monster { font-size: 150px; cursor: pointer; user-select: none; transition: transform 0.1s; }
+        #monster:active { transform: scale(0.9); }
+
+        /* Modaly */
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e1e1e; padding: 25px; border-radius: 15px; border: 2px solid #444; z-index: 2000; width: 320px; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        
+        /* Tlačítka a UI */
+        #bottom-panel { background: #161616; padding: 15px; border-top: 2px solid #282828; }
+        .stats { margin-bottom: 10px; font-size: 1rem; color: #aaa; }
+        #gold { color: #f1c40f; font-weight: bold; }
+        button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: opacity 0.2s; }
+        button:hover { opacity: 0.8; }
+        
+        #btn-upgrade { width: 100%; padding: 15px; background: #27ae60; color: white; font-size: 1rem; }
+        #btn-leaderboard { position: absolute; top: 15px; left: 15px; padding: 10px; background: #34495e; color: white; border-radius: 50%; width: 45px; height: 45px; }
+
+        table { width: 100%; margin-top: 10px; border-collapse: collapse; }
+        th, td { padding: 8px; border-bottom: 1px solid #333; text-align: left; }
     </style>
 </head>
 <body>
 
-    <div id="leaderboard-trigger" onclick="openM('leaderboard-modal')">🏆</div>
+    <button id="btn-leaderboard" onclick="openM('leaderboard-modal')">🏆</button>
 
     <div id="header-hud">
         <div id="stage-header">Stage: 1</div>
-        <div class="hp-container"><div id="hp-bar"></div><div id="hp-text">10 / 10</div></div>
-        <div style="font-size: 0.85rem; margin-top: 5px;">💎 Drahokamy: <b id="diamonds-hud">0</b> | <span id="user-display">Hráč</span></div>
-    </div>
-
-    <div id="game-area"><div id="monster" onclick="doTap(event)">👹</div></div>
-
-    <div id="action-bar">
-        <button class="action-btn btn-achieve" onclick="openM('achieve-modal')">🏆 ÚSPĚCHY</button>
-        <button class="action-btn btn-hero" onclick="openM('heroes-modal')">🛡️ ARMÁDA</button>
-        <button class="action-btn btn-char" onclick="openM('char-modal')">👤 POSTAVA</button>
-        <button class="action-btn btn-shop" onclick="openM('shop-modal')">🛒 OBCHOD</button>
-    </div>
-
-    <div id="login-modal" class="modal" style="display:block;">
-        <div class="modal-header"><h3>Vítej v Titanitas!</h3></div>
-        <div style="display:flex; flex-direction:column; gap:10px;">
-            <input type="text" id="username-input" style="padding:10px;" placeholder="Tvé jméno...">
-            <button onclick="login()" style="padding:10px; background:#27ae60; color:white; border:none; border-radius:5px;">ZAHÁJIT DOBRODRUŽSTVÍ</button>
+        <div class="hp-container">
+            <div id="hp-bar"></div>
         </div>
+        <div style="font-size: 0.9rem;">
+            Hráč: <span id="user-display" style="color:#8e44ad; font-weight:bold;">Hledám...</span>
+        </div>
+    </div>
+
+    <div id="game-area">
+        <div id="monster" onclick="doTap(event)">👻</div>
+    </div>
+
+    <div id="bottom-panel">
+        <div class="stats">
+            Máš: <span id="gold">0</span> 💰 | Síla kliku: <span id="tap-val">1</span>
+        </div>
+        <button id="btn-upgrade" onclick="buyTap()">
+            VYLEPŠIT MEČ (<span id="tap-cost">10</span> 💰)
+        </button>
+    </div>
+
+    <div id="login-modal" class="modal" style="display: block;">
+        <h3>Vítej v Titanitas!</h3>
+        <p>Zadej své jméno pro ukládání do cloudu:</p>
+        <input type="text" id="username-input" placeholder="Tvé jméno..." style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #444; background: #111; color: white;">
+        <button onclick="login()" style="width: 100%; padding: 12px; background: #27ae60; color: white;">ZAHÁJIT HRU</button>
     </div>
 
     <div id="leaderboard-modal" class="modal">
-        <div class="modal-header"><h3>Globální Leaderboard</h3><span style="cursor:pointer" onclick="closeM()">&times;</span></div>
-        <table>
-            <thead><tr><th>#</th><th>Hráč</th><th>Stage</th></tr></thead>
-            <tbody id="leaderboard-body"></tbody>
-        </table>
-    </div>
-
-    <div id="heroes-modal" class="modal"><div class="modal-header"><h3>Hrdinové</h3><span onclick="closeM()">&times;</span></div><div id="heroes-list"></div></div>
-    <div id="shop-modal" class="modal"><div class="modal-header"><h3>Obchod</h3><span onclick="closeM()">&times;</span></div><div id="shop-items"></div></div>
-    <div id="char-modal" class="modal"><div class="modal-header"><h3>Postava</h3><span onclick="closeM()">&times;</span></div><div id="inv-grid"></div></div>
-    <div id="achieve-modal" class="modal"><div class="modal-header"><h3>Úspěchy</h3><span onclick="closeM()">&times;</span></div><div id="achieve-list"></div></div>
-
-    <div id="bottom-panel">
-        <div class="stats-row">
-            <span>Zlato: <b id="gold">0</b></span>
-            <span>DPS: <b id="dps">0</b></span>
-            <span>Klik: <b id="tap-val">1</b></span>
+        <div class="modal-header">
+            <h3>Globální Síň slávy</h3>
+            <button onclick="closeM()" style="background:none; color:white; font-size: 20px;">&times;</button>
         </div>
-        <button id="quick-tap" onclick="buyTap()">⚔️ VYLEPŠIT MEČ (<span id="tap-cost">10</span> 💰)</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Hráč</th>
+                    <th>Stage</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+                </tbody>
+        </table>
     </div>
 
 </body>
