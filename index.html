@@ -3,41 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Titanitas - Global Edition</title>
+    <title>Titanitas - Global Hall of Fame</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
-    <div id="game-container">
-        <div id="header">
-            <h1>Titanitas</h1>
-            <div id="stats">
-                <span>Zlato: <span id="gold-display">0</span></span> | 
-                <span>Stage: <span id="stage-display">1</span></span>
+<body onclick="checkAuth()">
+
+    <div id="leaderboard-trigger" onclick="openM('leaderboard-modal')">🏆</div>
+
+    <div id="header-hud">
+        <div id="stage-header">Stage: 1</div>
+        <div class="hp-container"><div id="hp-bar"></div><div id="hp-text">10 / 10</div></div>
+        <div style="font-size: 0.85rem; margin-top: 5px;">
+            💎 Drahokamy: <b id="diamonds-hud">0</b> | <span id="user-display">Hráč</span>
+        </div>
+    </div>
+
+    <div id="game-area"><div id="monster" onclick="doTap(event)">👹</div></div>
+
+    <div id="action-bar">
+        <button class="action-btn btn-achieve" onclick="openM('achieve-modal')">🏆 ÚSPĚCHY</button>
+        <button class="action-btn btn-hero" onclick="openM('heroes-modal')">🛡️ ARMÁDA</button>
+        <button class="action-btn btn-char" onclick="openM('char-modal')">👤 POSTAVA</button>
+        <button class="action-btn btn-shop" onclick="openM('shop-modal')">🛒 OBCHOD</button>
+        <button id="prestigeBtn" class="action-btn btn-prestige" onclick="doResets()">✨ RESTART</button>
+    </div>
+
+    <div id="login-modal" class="modal" style="display:block;">
+        <div class="modal-header"><h3>Vítej v Titanitas!</h3></div>
+        <div class="login-form">
+            <p style="font-size: 0.8rem; color: #888;">Zadej své jméno pro globální žebříček.</p>
+            <input type="text" id="username-input" placeholder="Jméno (min. 3 znaky)">
+            <button onclick="login()" class="main-btn">ZAHÁJIT DOBRODRUŽSTVÍ</button>
+        </div>
+    </div>
+
+    <div id="leaderboard-modal" class="modal">
+        <div class="modal-header"><h3>Síň slávy</h3><span class="close-x" onclick="closeM()">&times;</span></div>
+        <div id="leaderboard-body-container">
+            <table>
+                <thead><tr><th>#</th><th>Hrdina</th><th>Resets</th><th>Stage</th></tr></thead>
+                <tbody id="leaderboard-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="char-modal" class="modal">
+        <div class="modal-header"><h3>Vybavení</h3><span class="close-x" onclick="closeM()">&times;</span></div>
+        <div class="char-grid">
+            <div class="slot-col">
+                <div class="item-slot" id="slot-helma" onclick="unequip('helma')"><span>Helma</span></div>
+                <div class="item-slot" id="slot-hrud" onclick="unequip('hrud')"><span>Hruď</span></div>
+            </div>
+            <div id="char-icon">👤</div>
+            <div class="slot-col">
+                <div class="item-slot" id="slot-stit" onclick="unequip('stit')"><span>Štít</span></div>
+                <div class="item-slot" id="slot-mec" onclick="unequip('mec')"><span>Meč</span></div>
             </div>
         </div>
+        <h4>Batoh</h4>
+        <div class="inventory-grid" id="inv-grid"></div>
+    </div>
 
-        <div id="enemy-area">
-            <div id="enemy-hp-bar"><div id="enemy-hp-fill"></div></div>
-            <div id="enemy-click-area">👻</div>
-        </div>
+    <div id="shop-modal" class="modal">
+        <div class="modal-header"><h3>Obchod</h3><span class="close-x" onclick="closeM()">&times;</span></div>
+        <div id="shop-items"></div>
+    </div>
 
-        <div class="controls">
-            <button onclick="openM()">🏆 ŽEBŘÍČEK</button>
-        </div>
+    <div id="heroes-modal" class="modal">
+        <div class="modal-header"><h3>Armáda</h3><span class="close-x" onclick="closeM()">&times;</span></div>
+        <div id="heroes-list"></div>
+    </div>
 
-        <div id="leaderboard-modal" class="modal" style="display:none;">
-            <div class="modal-content">
-                <span class="close-button" onclick="closeM()">&times;</span>
-                <h2>Globální Síň slávy</h2>
-                <table>
-                    <thead>
-                        <tr><th>#</th><th>Hráč</th><th>Zlato</th><th>Stage</th></tr>
-                    </thead>
-                    <tbody id="leaderboard-body"></tbody>
-                </table>
-            </div>
+    <div id="achieve-modal" class="modal">
+        <div class="modal-header"><h3>Úspěchy</h3><span class="close-x" onclick="closeM()">&times;</span></div>
+        <div id="achieve-list"></div>
+    </div>
+
+    <div id="bottom-panel">
+        <div class="stats-row">
+            <span>Zlato: <b id="gold">0</b></span>
+            <span>DPS: <b id="dps">0</b></span>
+            <span>Klik: <b id="tap-val">1</b></span>
         </div>
+        <button id="quick-tap" onclick="buyTap()">⚔️ VYLEPŠIT MEČ (<span id="tap-cost">10</span> 💰)</button>
     </div>
 
     <script src="script.js"></script>
