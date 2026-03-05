@@ -46,12 +46,11 @@ async function saveToCloud() {
     } catch (e) { console.error("Cloud save failed", e); }
 }
 
-// --- UPRAVENÝ SYSTÉM PŘIHLÁŠENÍ S HESLEM ---
+// --- SYSTÉM PŘIHLÁŠENÍ S NAČÍTÁNÍM DAT ---
 async function login() {
     let u = document.getElementById('username-input').value.trim();
     if(u.length < 3) return alert("Jméno musí mít alespoň 3 znaky!");
 
-    // 1. Zkusíme najít hráče na cloudu
     const { data: player, error } = await supabaseClient
         .from('leaderboard')
         .select('*')
@@ -59,22 +58,30 @@ async function login() {
         .maybeSingle();
 
     if (player) {
-        // Hráč existuje -> Vyžádáme heslo
         let pass = prompt(`Vítej zpět, ${u}! Zadej své heslo:`);
         if (pass === player.password) {
             currentUser = u;
-            // Pokud chceme, můžeme zde synchronizovat data z cloudu do hry:
-            // stage = player.stage; resets = player.resets;
             localStorage.setItem('tt_user_v6', u);
+            
+            // NAČTENÍ DAT Z CLOUDU DO PROMĚNNÝCH
+            stage = player.stage || 1;
+            resets = player.resets || 0;
+            gold = Number(player.gold) || 0;
+            maxStage = player.stage || 1;
+            
             document.getElementById('login-modal').style.display = 'none';
             document.getElementById('user-display').innerText = "👤 " + u;
-            alert("Přihlášení úspěšné!");
+            
+            // AKTUALIZACE STAVU HRY
+            setHP(); 
+            updateBiome();
             updateUI();
+            save(); // Uložení stažených dat do lokální paměti
+            alert(`Úspěšně načteno! Pokračuješ ze Stage ${stage}.`);
         } else {
             alert("Chybné heslo pro tohoto hrdinu!");
         }
     } else {
-        // Nový hráč -> Registrace
         let newPass = prompt(`Hrdina ${u} je volný! Vytvoř si heslo pro zabezpečení účtu:`);
         if(!newPass || newPass.length < 3) return alert("Heslo musí mít alespoň 3 znaky!");
 
