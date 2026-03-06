@@ -1,3 +1,5 @@
+(function() { // --- ZÁMEK START ---
+
 // --- KONFIGURACE SUPABASE ---
 const supabaseUrl = 'https://ypiouidfskzfwuvldwlk.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwaW91aWRmc2t6Znd1dmxkd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Mjg4NzUsImV4cCI6MjA4ODIwNDg3NX0.hwpuuxMdII0uB1HQgu8RN-NFgOBy9UOdU7J9QZsPizA';
@@ -60,7 +62,7 @@ async function saveToCloud() {
 }
 
 // --- SYSTÉM PŘIHLÁŠENÍ ---
-async function login() {
+window.login = async function() {
     let u = document.getElementById('username-input').value.trim();
     if(u.length < 3) return alert("Jméno musí mít alespoň 3 znaky!");
 
@@ -110,7 +112,7 @@ async function login() {
     }
 }
 
-function checkAuth() { if(!currentUser) document.getElementById('login-modal').style.display = 'block'; }
+window.checkAuth = function() { if(!currentUser) document.getElementById('login-modal').style.display = 'block'; }
 
 // --- BOJ A VIZUÁL ---
 function createParticles(x, y) {
@@ -123,8 +125,8 @@ function createParticles(x, y) {
     }
 }
 
-function doTap(e) {
-    if(!currentUser) return checkAuth();
+window.doTap = function(e) {
+    if(!currentUser) return window.checkAuth();
 
     // --- ANTI-CHEAT ---
     let now = Date.now();
@@ -162,7 +164,7 @@ function kill() {
 function setHP() { mHP = Math.round(10 * Math.pow(1.3, stage)) * (stage % 10 === 0 ? 5 : 1); mCurr = mHP; }
 function updateBiome() { document.body.style.background = ['#0a0a0a', '#1e3a1e', '#3e2a1a', '#2c3e50', '#4a1a1a'][Math.min(Math.floor((stage-1)/10), 4)]; }
 
-function buyTap() { 
+window.buyTap = function() { 
     if(gold >= tapCost) { 
         gold -= tapCost; 
         tapDmg++; 
@@ -186,7 +188,7 @@ function buyTap() {
 }
 
 // --- MODÁLY A SYSTÉMY ---
-function openM(id) {
+window.openM = function(id) {
     document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
     document.getElementById(id).style.display = 'block';
     if(id === 'char-modal') renderChar();
@@ -195,7 +197,7 @@ function openM(id) {
     if(id === 'achieve-modal') renderAchievements();
     if(id === 'leaderboard-modal') renderLeaderboard();
 }
-function closeM() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+window.closeM = function() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
 
 async function renderLeaderboard() {
     let filter = document.getElementById('search-player').value.toLowerCase();
@@ -221,7 +223,7 @@ function renderHeroes() {
         </div>`;
     }).join('');
 }
-function buyHero(i) { let cost = Math.round(heroesCfg[i].bC * Math.pow(1.25, hLv[i])); if(gold >= cost) { gold -= cost; hLv[i]++; updateUI(); renderHeroes(); save(); } }
+window.buyHero = function(i) { let cost = Math.round(heroesCfg[i].bC * Math.pow(1.25, hLv[i])); if(gold >= cost) { gold -= cost; hLv[i]++; updateUI(); renderHeroes(); save(); } }
 
 function generateItem() {
     let type = itemTypes[Math.floor(Math.random() * itemTypes.length)];
@@ -244,14 +246,14 @@ function renderChar() {
     }).join('');
 }
 
-function handleInvClick(idx) {
+window.handleInvClick = function(idx) {
     let it = inv[idx]; if(!it) return;
     if(confirm(`Vybavit ${it.rarity.n} ${it.type} (+${it.power} ${it.effect})?\n(Zrušit = Prodat za zlato)`)) {
         let old = eq[it.type]; eq[it.type] = it; if(old) inv[idx] = old; else inv.splice(idx, 1);
     } else { gold += Math.floor(stage * 20 * it.rarity.m); inv.splice(idx, 1); }
     renderChar(); updateUI(); save();
 }
-function unequip(t) { if(!eq[t] || inv.length >= 8) return; inv.push(eq[t]); delete eq[t]; renderChar(); updateUI(); save(); }
+window.unequip = function(t) { if(!eq[t] || inv.length >= 8) return; inv.push(eq[t]); delete eq[t]; renderChar(); updateUI(); save(); }
 
 // --- UPRAVENO: Funkce pro obchod s Timerem ---
 function renderShop() {
@@ -284,7 +286,7 @@ function renderShop() {
     }).join('');
 }
 
-function refreshShop(f = false) { 
+window.refreshShop = function(f = false) { 
     const now = Date.now();
     const cooldown = 24 * 60 * 60 * 1000;
     
@@ -302,7 +304,7 @@ function refreshShop(f = false) {
     save(); 
 }
 
-function forceRefreshWithDiamond() {
+window.forceRefreshWithDiamond = function() {
     if(diamonds < 1) return alert("Nemáš dost drahokamů!");
     diamonds -= 1;
     shopItems = [generateItem(), generateItem(), generateItem()]; 
@@ -311,7 +313,7 @@ function forceRefreshWithDiamond() {
     save();
 }
 
-function buyItem(idx) {
+window.buyItem = function(idx) {
     let it = shopItems[idx]; let cost = Math.round(it.power/2) + 5;
     if(diamonds >= cost && inv.length < 8) { diamonds -= cost; inv.push(it); shopItems.splice(idx, 1); renderShop(); updateUI(); save(); }
 }
@@ -325,12 +327,12 @@ function renderAchievements() {
     </div>`;
 }
 
-function doResets() {
+window.doResets = function() {
     if(stage < 50) return;
     let gain = Math.floor(stage / 10);
     if(confirm(`VZESTUP: Získáš ${gain} 💎. Tvé jméno se posune v žebříčku a začneš znovu silnější!`)) {
         diamonds += gain; resets++; gold = 0; stage = 1; tapDmg = 1; tapCost = 10; hLv = [0,0,0,0,0];
-        setHP(); updateBiome(); updateUI(); closeM(); save(); saveToCloud();
+        setHP(); updateBiome(); updateUI(); window.closeM(); save(); saveToCloud();
     }
 }
 
@@ -365,8 +367,9 @@ window.onload = () => {
         setHP();
         if(raw.mCurr !== undefined) mCurr = raw.mCurr;
     } else {
-        checkAuth();
+        window.checkAuth();
     }
     updateBiome(); updateUI();
 };
 
+})(); // --- ZÁMEK KONEC ---
