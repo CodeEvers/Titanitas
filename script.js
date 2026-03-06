@@ -263,7 +263,7 @@ function renderShop() {
         </div>`;
     }).join('');
 }
-function refreshShop(f = false) { if(!f && diamonds < 5) return; if(!f) diamonds -= 5; shopItems = [generateItem(), generateItem(), generateItem()]; renderShop(); updateUI(); save(); }
+function refreshShop(f = false) { if(!f && diamonds < 1) return; if(!f) diamonds -= 1; shopItems = [generateItem(), generateItem(), generateItem()]; renderShop(); updateUI(); save(); }
 function buyItem(idx) {
     let it = shopItems[idx]; let cost = Math.round(it.power/2) + 5;
     if(diamonds >= cost && inv.length < 8) { diamonds -= cost; inv.push(it); shopItems.splice(idx, 1); renderShop(); updateUI(); save(); }
@@ -322,3 +322,4 @@ window.onload = () => {
     }
     updateBiome(); updateUI();
 };
+
