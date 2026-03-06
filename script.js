@@ -28,6 +28,7 @@ let gold = raw.gold || 0, stage = raw.stage || 1, tapDmg = raw.tapDmg || 1, tapC
 let hLv = raw.hLv || [0,0,0,0,0], diamonds = raw.diamonds || 0, resets = raw.resets || 0;
 let inv = raw.inv || [], eq = raw.eq || {}, shopItems = raw.shopItems || [];
 let clicks = raw.clicks || 0, kills = raw.kills || 0, maxStage = raw.maxStage || 1;
+let lastFreeRefresh = raw.lastFreeRefresh || 0; // PŘIDÁNO: Sledování času obnovy
 
 let mHP = 10, mCurr = raw.mCurr || 10, totalDPS = 0, totalTap = 1, goldMult = 1, isGolden = false;
 
@@ -37,8 +38,8 @@ let lastClickTime = 0;
 // --- UKLÁDÁNÍ ---
 function save() { 
     if(stage > maxStage) maxStage = stage;
-    // PŘIDÁNO: mCurr do save objektu
-    const saveObj = { gold, stage, tapDmg, tapCost, hLv, diamonds, resets, inv, eq, shopItems, clicks, kills, maxStage, mCurr };
+    // PŘIDÁNO: lastFreeRefresh do save objektu
+    const saveObj = { gold, stage, tapDmg, tapCost, hLv, diamonds, resets, inv, eq, shopItems, clicks, kills, maxStage, mCurr, lastFreeRefresh };
     localStorage.setItem('ttSave_v6', JSON.stringify(saveObj)); 
     return saveObj;
 }
@@ -80,9 +81,9 @@ async function login() {
                 gold = s.gold; stage = s.stage; tapDmg = s.tapDmg; tapCost = s.tapCost;
                 hLv = s.hLv; resets = s.resets; inv = s.inv; eq = s.eq; 
                 shopItems = s.shopItems || []; clicks = s.clicks; kills = s.kills; maxStage = s.maxStage;
+                lastFreeRefresh = s.lastFreeRefresh || 0;
                 diamonds = (player.diamonds !== undefined && player.diamonds !== null) ? player.diamonds : (s.diamonds || 0);
                 
-                // NAČTENÍ ROZDĚLANÉHO HP
                 setHP(); 
                 if(s.mCurr !== undefined) mCurr = s.mCurr;
             }
@@ -252,9 +253,28 @@ function handleInvClick(idx) {
 }
 function unequip(t) { if(!eq[t] || inv.length >= 8) return; inv.push(eq[t]); delete eq[t]; renderChar(); updateUI(); save(); }
 
+// --- UPRAVENO: Funkce pro obchod s Timerem ---
 function renderShop() {
     if(shopItems.length === 0) refreshShop(true);
-    document.getElementById('shop-items').innerHTML = shopItems.map((it, idx) => {
+    
+    // Výpočet času pro tlačítko
+    const now = Date.now();
+    const cooldown = 24 * 60 * 60 * 1000;
+    const timeLeft = Math.max(0, cooldown - (now - lastFreeRefresh));
+    const isFree = timeLeft === 0;
+
+    // Vytvoření HTML pro tlačítko refresh
+    let refreshBtnHTML = '';
+    if (isFree) {
+        refreshBtnHTML = `<button onclick="refreshShop()" style="width:100%; padding:10px; background:#2ecc71; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin-bottom:10px;">🔄 OBNOVIT ZDARMA!</button>`;
+    } else {
+        const h = Math.floor(timeLeft / 3600000);
+        const m = Math.floor((timeLeft % 3600000) / 60000);
+        refreshBtnHTML = `<button onclick="refreshShop()" style="width:100%; padding:10px; background:#34495e; color:#bdc3c7; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin-bottom:5px;">🔄 DALŠÍ ZDARMA ZA ${h}h ${m}m</button>
+                          <center><small style="color:#f1c40f; cursor:pointer" onclick="forceRefreshWithDiamond()">Nebo obnovit za 1 💎</small></center><br>`;
+    }
+
+    document.getElementById('shop-items').innerHTML = refreshBtnHTML + shopItems.map((it, idx) => {
         let curP = eq[it.type] ? eq[it.type].power : 0;
         let cost = Math.round(it.power/2) + 5;
         return `<div class="shop-item ${it.power > curP ? 'better' : 'worse'}">
@@ -263,7 +283,34 @@ function renderShop() {
         </div>`;
     }).join('');
 }
-function refreshShop(f = false) { if(!f && diamonds < 1) return; if(!f) diamonds -= 1; shopItems = [generateItem(), generateItem(), generateItem()]; renderShop(); updateUI(); save(); }
+
+function refreshShop(f = false) { 
+    const now = Date.now();
+    const cooldown = 24 * 60 * 60 * 1000;
+    
+    if(!f) {
+        if((now - lastFreeRefresh) >= cooldown) {
+            lastFreeRefresh = now; // Použijeme free refresh
+        } else {
+            return; // Pokud není free a voláme refreshShop napřímo, nic neděláme (použij forceRefreshWithDiamond)
+        }
+    }
+    
+    shopItems = [generateItem(), generateItem(), generateItem()]; 
+    renderShop(); 
+    updateUI(); 
+    save(); 
+}
+
+function forceRefreshWithDiamond() {
+    if(diamonds < 1) return alert("Nemáš dost drahokamů!");
+    diamonds -= 1;
+    shopItems = [generateItem(), generateItem(), generateItem()]; 
+    renderShop(); 
+    updateUI(); 
+    save();
+}
+
 function buyItem(idx) {
     let it = shopItems[idx]; let cost = Math.round(it.power/2) + 5;
     if(diamonds >= cost && inv.length < 8) { diamonds -= cost; inv.push(it); shopItems.splice(idx, 1); renderShop(); updateUI(); save(); }
@@ -322,4 +369,3 @@ window.onload = () => {
     }
     updateBiome(); updateUI();
 };
-
