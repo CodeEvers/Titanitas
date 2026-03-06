@@ -29,12 +29,13 @@ let hLv = raw.hLv || [0,0,0,0,0], diamonds = raw.diamonds || 0, resets = raw.res
 let inv = raw.inv || [], eq = raw.eq || {}, shopItems = raw.shopItems || [];
 let clicks = raw.clicks || 0, kills = raw.kills || 0, maxStage = raw.maxStage || 1;
 
-let mHP = 10, mCurr = 10, totalDPS = 0, totalTap = 1, goldMult = 1, isGolden = false;
+let mHP = 10, mCurr = raw.mCurr || 10, totalDPS = 0, totalTap = 1, goldMult = 1, isGolden = false;
 
 // --- UKLÁDÁNÍ ---
 function save() { 
     if(stage > maxStage) maxStage = stage;
-    const saveObj = { gold, stage, tapDmg, tapCost, hLv, diamonds, resets, inv, eq, shopItems, clicks, kills, maxStage };
+    // PŘIDÁNO: mCurr do save objektu
+    const saveObj = { gold, stage, tapDmg, tapCost, hLv, diamonds, resets, inv, eq, shopItems, clicks, kills, maxStage, mCurr };
     localStorage.setItem('ttSave_v6', JSON.stringify(saveObj)); 
     return saveObj;
 }
@@ -77,11 +78,15 @@ async function login() {
                 hLv = s.hLv; resets = s.resets; inv = s.inv; eq = s.eq; 
                 shopItems = s.shopItems || []; clicks = s.clicks; kills = s.kills; maxStage = s.maxStage;
                 diamonds = (player.diamonds !== undefined && player.diamonds !== null) ? player.diamonds : (s.diamonds || 0);
+                
+                // NAČTENÍ ROZDĚLANÉHO HP
+                setHP(); 
+                if(s.mCurr !== undefined) mCurr = s.mCurr;
             }
             
             document.getElementById('login-modal').style.display = 'none';
             document.getElementById('user-display').innerText = "👤 " + u;
-            setHP(); updateBiome(); updateUI(); save();
+            updateBiome(); updateUI(); save();
             alert("Data úspěšně načtena z cloudu!");
         } else {
             alert("Chybné heslo!");
@@ -147,13 +152,11 @@ function kill() {
 function setHP() { mHP = Math.round(10 * Math.pow(1.3, stage)) * (stage % 10 === 0 ? 5 : 1); mCurr = mHP; }
 function updateBiome() { document.body.style.background = ['#0a0a0a', '#1e3a1e', '#3e2a1a', '#2c3e50', '#4a1a1a'][Math.min(Math.floor((stage-1)/10), 4)]; }
 
-// --- UPRAVENÁ FUNKCE S MILNÍKEM ---
 function buyTap() { 
     if(gold >= tapCost) { 
         gold -= tapCost; 
         tapDmg++; 
 
-        // Bonus +10 DMG každých 10 vylepšení
         if (tapDmg % 10 === 0) {
             tapDmg += 10;
             const d = document.createElement('div');
@@ -300,8 +303,12 @@ window.onload = () => {
     if(currentUser) {
         document.getElementById('login-modal').style.display = 'none';
         document.getElementById('user-display').innerText = "👤 " + currentUser;
+        
+        // NAČTENÍ ROZDĚLANÉHO HP Z LOKÁLNÍ PAMĚTI (pro refresh)
+        setHP();
+        if(raw.mCurr !== undefined) mCurr = raw.mCurr;
     } else {
         checkAuth();
     }
-    setHP(); updateBiome(); updateUI();
+    updateBiome(); updateUI();
 };
