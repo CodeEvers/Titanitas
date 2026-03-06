@@ -198,7 +198,8 @@ function closeM() { document.querySelectorAll('.modal').forEach(m => m.style.dis
 
 async function renderLeaderboard() {
     let filter = document.getElementById('search-player').value.toLowerCase();
-    let { data, error } = await supabaseClient.from('leaderboard').select('*').order('resets', {ascending: false}).limit(20);
+    // UPRAVENO: Priorita resets, poté stage (oboje sestupně)
+    let { data, error } = await supabaseClient.from('leaderboard').select('*').order('resets', {ascending: false}).order('stage', {ascending: false}).limit(20);
     if(error) return;
     document.getElementById('leaderboard-body').innerHTML = data
         .filter(p => p.name.toLowerCase().includes(filter))
