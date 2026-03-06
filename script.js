@@ -128,7 +128,7 @@ function doTap(e) {
 
     // --- ANTI-CHEAT ---
     let now = Date.now();
-    if (now - lastClickTime < 50) return;
+    if (now - lastClickTime < 100) return;
     lastClickTime = now;
 
     clicks++; let crit = Math.random() < 0.1; let dmg = totalTap * (crit ? 5 : 1);
@@ -369,3 +369,4 @@ window.onload = () => {
     }
     updateBiome(); updateUI();
 };
+
