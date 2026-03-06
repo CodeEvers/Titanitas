@@ -31,6 +31,9 @@ let clicks = raw.clicks || 0, kills = raw.kills || 0, maxStage = raw.maxStage ||
 
 let mHP = 10, mCurr = raw.mCurr || 10, totalDPS = 0, totalTap = 1, goldMult = 1, isGolden = false;
 
+// ANTICHEAT PROMĚNNÁ
+let lastClickTime = 0;
+
 // --- UKLÁDÁNÍ ---
 function save() { 
     if(stage > maxStage) maxStage = stage;
@@ -121,6 +124,12 @@ function createParticles(x, y) {
 
 function doTap(e) {
     if(!currentUser) return checkAuth();
+
+    // --- ANTI-CHEAT ---
+    let now = Date.now();
+    if (now - lastClickTime < 50) return;
+    lastClickTime = now;
+
     clicks++; let crit = Math.random() < 0.1; let dmg = totalTap * (crit ? 5 : 1);
     mCurr -= dmg;
     const d = document.createElement('div'); d.className = 'dmg-text'; d.innerText = (crit ? '💥' : '') + Math.floor(dmg); d.style.left = e.clientX + 'px'; d.style.top = (e.clientY - 50) + 'px'; document.body.appendChild(d); setTimeout(() => d.remove(), 700);
