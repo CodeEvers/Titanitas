@@ -6,10 +6,23 @@
     <title>Titanitas - Global Hall of Fame Edition</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Animace pro Lucky Diamond */
+        @keyframes lucky-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+        }
+        .lucky-anim { animation: lucky-pulse 2s infinite; }
+    </style>
 </head>
 <body onclick="checkAuth()">
 
     <div id="leaderboard-trigger" onclick="openM('leaderboard-modal')">🏆</div>
+
+    <div id="lucky-diamond-container" onclick="collectLuckyDiamond()" class="lucky-anim" style="display: none; position: absolute; left: 10px; top: 80px; width: 44px; height: 44px; background: rgba(0,0,0,0.6); border-radius: 50%; border: 2px solid #3498db; cursor: pointer; text-align: center; line-height: 42px; font-size: 22px; z-index: 100; transition: 0.3s;">
+        💎
+    </div>
 
     <div id="header-hud">
         <div id="stage-header">Stage: 1</div>
@@ -94,4 +107,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
