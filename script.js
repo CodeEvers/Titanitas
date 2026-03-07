@@ -181,7 +181,7 @@ function updateBiome() {
         '#0984e3', // 61-70: Zmrzlá laguna
         '#6c5ce7', // 71-80: Magická dimenze
         '#d63031', // 81-90: Lávové pole
-        '#2f3640'  // 91+:   Prázdnota
+        '#2f3640'  // 91+:    Prázdnota
     ];
     const biomeIndex = Math.min(Math.floor((stage - 1) / 10), biomes.length - 1);
     document.body.style.background = biomes[biomeIndex]; 
@@ -338,8 +338,10 @@ function renderAchievements() {
 window.doResets = function() {
     if(stage < 50) return;
     let gain = Math.floor(stage / 10);
-    if(confirm(`VZESTUP: Získáš ${gain} 💎. Tvé jméno se posune v žebříčku a začneš znovu silnější!`)) {
-        diamonds += gain; resets++; gold = 0; stage = 1; tapDmg = 1; tapCost = 10; hLv = [0,0,0,0,0];
+    // VÝPOČET: 1. reset = 500, každý další násoben x1.2
+    let goldBonus = Math.floor(500 * Math.pow(1.2, resets));
+    if(confirm(`VZESTUP: Získáš ${gain} 💎. Tvé jméno se posune v žebříčku a začneš znovu silnější!\n(Bonus do startu: ${goldBonus} 💰)`)) {
+        diamonds += gain; resets++; gold = goldBonus; stage = 1; tapDmg = 1; tapCost = 10; hLv = [0,0,0,0,0];
         setHP(); updateBiome(); updateUI(); window.closeM(); save(); saveToCloud();
     }
 }
