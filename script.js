@@ -30,8 +30,8 @@ let gold = raw.gold || 0, stage = raw.stage || 1, tapDmg = raw.tapDmg || 1, tapC
 let hLv = raw.hLv || [0,0,0,0,0], diamonds = raw.diamonds || 0, resets = raw.resets || 0;
 let inv = raw.inv || [], eq = raw.eq || {}, shopItems = raw.shopItems || [];
 let clicks = raw.clicks || 0, kills = raw.kills || 0, maxStage = raw.maxStage || 1;
-let lastFreeRefresh = raw.lastFreeRefresh || 0; // PŘIDÁNO: Sledování času obnovy
-let lastLucky = raw.lastLucky || 0; // PŘIDÁNO: Sledování Lucky Diamondu
+let lastFreeRefresh = raw.lastFreeRefresh || 0; 
+let lastLucky = raw.lastLucky || 0; 
 
 let mHP = 10, mCurr = raw.mCurr || 10, totalDPS = 0, totalTap = 1, goldMult = 1, isGolden = false;
 
@@ -41,7 +41,6 @@ let lastClickTime = 0;
 // --- UKLÁDÁNÍ ---
 function save() { 
     if(stage > maxStage) maxStage = stage;
-    // PŘIDÁNO: lastFreeRefresh a lastLucky do save objektu
     const saveObj = { gold, stage, tapDmg, tapCost, hLv, diamonds, resets, inv, eq, shopItems, clicks, kills, maxStage, mCurr, lastFreeRefresh, lastLucky };
     localStorage.setItem('ttSave_v6', JSON.stringify(saveObj)); 
     return saveObj;
@@ -130,7 +129,6 @@ function createParticles(x, y) {
 window.doTap = function(e) {
     if(!currentUser) return window.checkAuth();
 
-    // --- ANTI-CHEAT ---
     let now = Date.now();
     if (now - lastClickTime < 100) return;
     lastClickTime = now;
@@ -153,18 +151,41 @@ function kill() {
     stage++; 
     isGolden = Math.random() < 0.01;
     const m = document.getElementById('monster');
+
+    // UPRAVENO: Rozšířená monstra a bossové
+    const normalMonsters = ['👹','💀','👽','🤖','🐲','👻','👾','🎃','🧛','🧟','🤡','👺','🐌','🦂','🕷️','🐺','🦁'];
+    const bossMonsters = ['👑','👹','🔥','💀','👿','🐲','👁️'];
+
     if(isGolden) {
         m.innerText = '💰';
         m.classList.add('golden-monster');
     } else {
-        m.innerText = ['👹','💀','👽','🤖','🐲','👻','👾','🎃','🧛','🧟'][Math.floor(Math.random()*10)];
+        const pool = (stage % 10 === 0) ? bossMonsters : normalMonsters;
+        m.innerText = pool[Math.floor(Math.random() * pool.length)];
         m.classList.remove('golden-monster');
     }
     setHP(); updateBiome(); updateUI(); save();
 }
 
 function setHP() { mHP = Math.round(10 * Math.pow(1.3, stage)) * (stage % 10 === 0 ? 5 : 1); mCurr = mHP; }
-function updateBiome() { document.body.style.background = ['#0a0a0a', '#1e3a1e', '#3e2a1a', '#2c3e50', '#4a1a1a'][Math.min(Math.floor((stage-1)/10), 4)]; }
+
+// UPRAVENO: Rozšířené biomy (pozadí) až do levelu 100
+function updateBiome() { 
+    const biomes = [
+        '#0a0a0a', // 1-10: Temnota
+        '#1e3a1e', // 11-20: Hluboký les
+        '#3e2a1a', // 21-30: Starý důl
+        '#2c3e50', // 31-40: Hradní nádvoří
+        '#4a1a1a', // 41-50: Pekelná brána
+        '#2d3436', // 51-60: Kamenná věž
+        '#0984e3', // 61-70: Zmrzlá laguna
+        '#6c5ce7', // 71-80: Magická dimenze
+        '#d63031', // 81-90: Lávové pole
+        '#2f3640'  // 91+:   Prázdnota
+    ];
+    const biomeIndex = Math.min(Math.floor((stage - 1) / 10), biomes.length - 1);
+    document.body.style.background = biomes[biomeIndex]; 
+}
 
 window.buyTap = function() { 
     if(gold >= tapCost) { 
@@ -203,7 +224,6 @@ window.closeM = function() { document.querySelectorAll('.modal').forEach(m => m.
 
 async function renderLeaderboard() {
     let filter = document.getElementById('search-player').value.toLowerCase();
-    // UPRAVENO: Priorita resets, poté stage (oboje sestupně)
     let { data, error } = await supabaseClient.from('leaderboard').select('*').order('resets', {ascending: false}).order('stage', {ascending: false}).limit(20);
     if(error) return;
     document.getElementById('leaderboard-body').innerHTML = data
@@ -257,17 +277,13 @@ window.handleInvClick = function(idx) {
 }
 window.unequip = function(t) { if(!eq[t] || inv.length >= 8) return; inv.push(eq[t]); delete eq[t]; renderChar(); updateUI(); save(); }
 
-// --- UPRAVENO: Funkce pro obchod s Timerem ---
 function renderShop() {
     if(shopItems.length === 0) refreshShop(true);
-    
-    // Výpočet času pro tlačítko
     const now = Date.now();
     const cooldown = 24 * 60 * 60 * 1000;
     const timeLeft = Math.max(0, cooldown - (now - lastFreeRefresh));
     const isFree = timeLeft === 0;
 
-    // Vytvoření HTML pro tlačítko refresh
     let refreshBtnHTML = '';
     if (isFree) {
         refreshBtnHTML = `<button onclick="refreshShop()" style="width:100%; padding:10px; background:#2ecc71; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin-bottom:10px;">🔄 OBNOVIT ZDARMA!</button>`;
@@ -291,28 +307,18 @@ function renderShop() {
 window.refreshShop = function(f = false) { 
     const now = Date.now();
     const cooldown = 24 * 60 * 60 * 1000;
-    
     if(!f) {
-        if((now - lastFreeRefresh) >= cooldown) {
-            lastFreeRefresh = now; // Použijeme free refresh
-        } else {
-            return; // Pokud není free a voláme refreshShop napřímo, nic neděláme (použij forceRefreshWithDiamond)
-        }
+        if((now - lastFreeRefresh) >= cooldown) { lastFreeRefresh = now; } else { return; }
     }
-    
     shopItems = [generateItem(), generateItem(), generateItem()]; 
-    renderShop(); 
-    updateUI(); 
-    save(); 
+    renderShop(); updateUI(); save(); 
 }
 
 window.forceRefreshWithDiamond = function() {
     if(diamonds < 1) return alert("Nemáš dost drahokamů!");
     diamonds -= 1;
     shopItems = [generateItem(), generateItem(), generateItem()]; 
-    renderShop(); 
-    updateUI(); 
-    save();
+    renderShop(); updateUI(); save();
 }
 
 window.buyItem = function(idx) {
@@ -356,7 +362,6 @@ function updateUI() {
     else { pBtn.classList.remove('ready'); pBtn.innerText = "RESTART (50+)"; }
 }
 
-// --- LUCKY DIAMOND SYSTÉM ---
 function checkLuckyDiamond() {
     const now = Date.now();
     const cooldown = 6 * 60 * 60 * 1000;
@@ -387,12 +392,9 @@ window.collectLuckyDiamond = function() {
     const container = document.getElementById('lucky-diamond-container');
     const isGold = container.dataset.type === 'gold';
     let gain = isGold ? (Math.floor(Math.random() * 3) + 1) : 1;
-    
     diamonds += gain;
     lastLucky = Date.now();
-    
     alert(isGold ? `ŠTĚSTÍ! Našel jsi Zlatý diamant a získal ${gain} 💎!` : `Získal jsi 1 💎!`);
-    
     container.style.display = 'none';
     container.dataset.status = 'waiting';
     updateUI(); save(); saveToCloud();
@@ -401,14 +403,12 @@ window.collectLuckyDiamond = function() {
 // --- SMYČKY ---
 setInterval(() => { if(totalDPS > 0 && currentUser) { mCurr -= totalDPS / 10; if(mCurr <= 0) kill(); updateUI(); } }, 100);
 setInterval(saveToCloud, 30000);
-setInterval(checkLuckyDiamond, 10000); // Kontrola diamantu každých 10s
+setInterval(checkLuckyDiamond, 10000);
 
 window.onload = () => {
     if(currentUser) {
         document.getElementById('login-modal').style.display = 'none';
         document.getElementById('user-display').innerText = "👤 " + currentUser;
-        
-        // NAČTENÍ ROZDĚLANÉHO HP Z LOKÁLNÍ PAMĚTI (pro refresh)
         setHP();
         if(raw.mCurr !== undefined) mCurr = raw.mCurr;
         checkLuckyDiamond();
