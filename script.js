@@ -52,7 +52,7 @@ async function saveToCloud() {
         const fullData = save();
         await supabaseClient.from('leaderboard').upsert({
             name: currentUser, 
-            stage: maxStage, 
+            stage: stage, // ZMĚNA: Ukládáme aktuální stage, aby žebříček po resetu klesl na 1
             resets: resets, 
             gold: Math.floor(gold),
             diamonds: diamonds,
@@ -152,7 +152,6 @@ function kill() {
     isGolden = Math.random() < 0.01;
     const m = document.getElementById('monster');
 
-    // UPRAVENO: Rozšířená monstra a bossové
     const normalMonsters = ['👹','💀','👽','🤖','🐲','👻','👾','🎃','🧛','🧟','🤡','👺','🐌','🦂','🕷️','🐺','🦁'];
     const bossMonsters = ['👑','👹','🔥','💀','👿','🐲','👁️'];
 
@@ -169,7 +168,6 @@ function kill() {
 
 function setHP() { mHP = Math.round(10 * Math.pow(1.3, stage)) * (stage % 10 === 0 ? 5 : 1); mCurr = mHP; }
 
-// UPRAVENO: Rozšířené biomy (pozadí) až do levelu 100
 function updateBiome() { 
     const biomes = [
         '#0a0a0a', // 1-10: Temnota
@@ -338,10 +336,13 @@ function renderAchievements() {
 window.doResets = function() {
     if(stage < 50) return;
     let gain = Math.floor(stage / 10);
-    // VÝPOČET: 1. reset = 500, každý další násoben x1.2
+    // ZMĚNA: Bonus se vypočítá z aktuálních resetů, tzn. při prvním resetu (resets=0) dostane 500 pro tu novou hru.
     let goldBonus = Math.floor(500 * Math.pow(1.2, resets));
     if(confirm(`VZESTUP: Získáš ${gain} 💎. Tvé jméno se posune v žebříčku a začneš znovu silnější!\n(Bonus do startu: ${goldBonus} 💰)`)) {
-        diamonds += gain; resets++; gold = goldBonus; stage = 1; tapDmg = 1; tapCost = 10; hLv = [0,0,0,0,0];
+        diamonds += gain; 
+        resets++; // Zvýšíme úroveň prestiže
+        gold = goldBonus; // Nastavíme bonusové zlato
+        stage = 1; tapDmg = 1; tapCost = 10; hLv = [0,0,0,0,0];
         setHP(); updateBiome(); updateUI(); window.closeM(); save(); saveToCloud();
     }
 }
@@ -374,13 +375,9 @@ function checkLuckyDiamond() {
         container.style.display = 'block';
         if (container.dataset.status !== 'ready') {
             if (Math.random() < 0.01) {
-                container.innerText = '🟡';
-                container.style.borderColor = '#f1c40f';
-                container.dataset.type = 'gold';
+                container.innerText = '🟡'; container.style.borderColor = '#f1c40f'; container.dataset.type = 'gold';
             } else {
-                container.innerText = '💎';
-                container.style.borderColor = '#3498db';
-                container.dataset.type = 'normal';
+                container.innerText = '💎'; container.style.borderColor = '#3498db'; container.dataset.type = 'normal';
             }
             container.dataset.status = 'ready';
         }
