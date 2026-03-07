@@ -75,3 +75,29 @@ td { padding: 10px; border-bottom: 1px solid #333; font-size: 0.85rem; }
 .stats-row b { color: #f1c40f; }
 #quick-tap { width: 100%; padding: 15px; background: #27ae60; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; border-bottom: 5px solid #1e8449; font-size: 1rem; }
 #quick-tap:disabled { opacity: 0.5; cursor: not-allowed; transform: translateY(3px); border-bottom: none; }
+
+/* --- PŘIDÁNO: LUCKY DIAMOND STYLY --- */
+#lucky-diamond-container { 
+    z-index: 100; 
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.4); 
+    user-select: none;
+    transition: transform 0.2s, background 0.2s;
+}
+
+#lucky-diamond-container:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+#lucky-diamond-container:active {
+    transform: scale(0.9);
+}
+
+.lucky-anim { 
+    animation: lucky-float 3s infinite ease-in-out; 
+}
+
+@keyframes lucky-float {
+    0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 0 10px rgba(52, 152, 219, 0.3); }
+    50% { transform: translateY(-5px) scale(1.05); box-shadow: 0 10px 20px rgba(52, 152, 219, 0.5); }
+}
