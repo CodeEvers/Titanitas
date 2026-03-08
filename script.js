@@ -145,7 +145,7 @@ window.doTap = function(e) {
 
 function kill() {
     kills++; 
-    let reward = (stage % 10 === 0 ? stage * 25 : stage * 6) * goldMult; 
+    let reward = (stage % 10 === 0 ? stage * 60 : stage * 6) * goldMult; 
     if(isGolden) reward *= 10;
     gold += Math.floor(reward); 
     stage++; 
@@ -426,3 +426,4 @@ window.onload = () => {
 };
 
 })(); // --- ZÁMEK KONEC ---
+
