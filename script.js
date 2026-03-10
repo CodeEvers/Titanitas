@@ -137,13 +137,13 @@ window.doTap = function(e) {
 
     // BONUS: Každých 50 kliknutí dá 5 goldů
     if (clicks % 50 === 0) {
-        gold += 5;
+        gold += 10;
         const b = document.createElement('div');
         b.className = 'dmg-text';
-        b.style.color = '#f1c40f';
+        b.style.color = '#2ecc71';
         b.style.left = e.clientX + 'px';
         b.style.top = (e.clientY - 80) + 'px';
-        b.innerText = "+5 💰 (BONUS!)";
+        b.innerText = "+10 💰 (BONUS!)";
         document.body.appendChild(b);
         setTimeout(() => b.remove(), 800);
     }
@@ -441,3 +441,4 @@ window.onload = () => {
 };
 
 })(); // --- ZÁMEK KONEC ---
+
