@@ -56,7 +56,7 @@ async function saveToCloud() {
             resets: resets, 
             gold: Math.floor(gold),
             diamonds: diamonds,
-            save_data: fullData 
+  0         save_data: fullData 
         }, { onConflict: 'name' });
     } catch (e) { console.error("Cloud save failed", e); }
 }
@@ -133,7 +133,22 @@ window.doTap = function(e) {
     if (now - lastClickTime < 100) return;
     lastClickTime = now;
 
-    clicks++; let crit = Math.random() < 0.1; let dmg = totalTap * (crit ? 5 : 1);
+    clicks++; 
+
+    // BONUS: Každých 50 kliknutí dá 5 goldů
+    if (clicks % 50 === 0) {
+        gold += 10;
+        const b = document.createElement('div');
+        b.className = 'dmg-text';
+        b.style.color = '#f1c40f';
+        b.style.left = e.clientX + 'px';
+        b.style.top = (e.clientY - 80) + 'px';
+        b.innerText = "+5 💰 (BONUS!)";
+        document.body.appendChild(b);
+        setTimeout(() => b.remove(), 800);
+    }
+
+    let crit = Math.random() < 0.1; let dmg = totalTap * (crit ? 5 : 1);
     mCurr -= dmg;
     const d = document.createElement('div'); d.className = 'dmg-text'; d.innerText = (crit ? '💥' : '') + Math.floor(dmg); d.style.left = e.clientX + 'px'; d.style.top = (e.clientY - 50) + 'px'; document.body.appendChild(d); setTimeout(() => d.remove(), 700);
     createParticles(e.clientX, e.clientY);
@@ -271,7 +286,7 @@ window.handleInvClick = function(idx) {
     if(confirm(`Předmět: ${it.rarity.n} ${it.type} (+${it.power} ${it.effect})\n\nChcete předmět NASADIT? (Klikněte na OK)\nChcete předmět PRODAT? (Klikněte na Zrušit)`)) {
         let old = eq[it.type]; eq[it.type] = it; if(old) inv[idx] = old; else inv.splice(idx, 1);
         alert("Předmět nasazen!");
-    } else { 
+    } else { 
         let price = Math.floor(stage * 20 * it.rarity.m);
         if(confirm(`Opravdu chcete prodat předmět za ${price} zlata?`)) {
             gold += price; inv.splice(idx, 1);
@@ -386,7 +401,7 @@ function checkLuckyDiamond() {
                 container.innerText = '🟡'; container.style.borderColor = '#f1c40f'; container.dataset.type = 'gold';
             } else {
                 container.innerText = '💎'; container.style.borderColor = '#3498db'; container.dataset.type = 'normal';
-      0     }
+      0     }
             container.dataset.status = 'ready';
         }
     } else {
@@ -426,4 +441,3 @@ window.onload = () => {
 };
 
 })(); // --- ZÁMEK KONEC ---
-
