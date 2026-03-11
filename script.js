@@ -135,7 +135,7 @@ window.doTap = function(e) {
 
     clicks++; 
 
-    // BONUS: Každých 50 kliknutí dá 5 goldů
+    // BONUS: Každých 50 kliknutí dá 10 goldů
     if (clicks % 50 === 0) {
         gold += 10;
         const b = document.createElement('div');
@@ -184,20 +184,27 @@ function kill() {
 function setHP() { mHP = Math.round(10 * Math.pow(1.3, stage)) * (stage % 10 === 0 ? 5 : 1); mCurr = mHP; }
 
 function updateBiome() { 
-    const biomes = [
-        '#0a0a0a', // 1-10: Temnota
-        '#1e3a1e', // 11-20: Hluboký les
-        '#3e2a1a', // 21-30: Starý důl
-        '#2c3e50', // 31-40: Hradní nádvoří
-        '#4a1a1a', // 41-50: Pekelná brána
-        '#2d3436', // 51-60: Kamenná věž
-        '#0984e3', // 61-70: Zmrzlá laguna
-        '#6c5ce7', // 71-80: Magická dimenze
-        '#d63031', // 81-90: Lávové pole
-        '#2f3640'  // 91+:    Prázdnota
+    const biomeImages = [
+        'temnota.png',      // 1-10
+        'les.png',          // 11-20
+        'dul.png',          // 21-30
+        'nadvori.png',      // 31-40
+        'brana.png',        // 41-50
+        'vez.png',          // 51-60
+        'laguna.png',       // 61-70
+        'dimenze.png',      // 71-80
+        'lava.png',         // 81-90
+        'prazdnota.png'     // 91+
     ];
-    const biomeIndex = Math.min(Math.floor((stage - 1) / 10), biomes.length - 1);
-    document.body.style.background = biomes[biomeIndex]; 
+    const index = Math.min(Math.floor((stage - 1) / 10), biomeImages.length - 1);
+    const imgName = biomeImages[index];
+    
+    // Nastavení obrázku na pozadí s "cover" efektem pro mobily i PC
+    document.body.style.backgroundImage = `url('assets/backgrounds/${imgName}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundRepeat = 'no-repeat';
+    document.body.style.backgroundAttachment = 'fixed'; // Drží pozadí na místě při scrollu
 }
 
 window.buyTap = function() { 
@@ -441,4 +448,3 @@ window.onload = () => {
 };
 
 })(); // --- ZÁMEK KONEC ---
-
