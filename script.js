@@ -167,7 +167,7 @@ function kill() {
     isGolden = Math.random() < 0.01;
     const m = document.getElementById('monster');
 
-    const normalMonsters = ['👹','💀','👽','🤖','🐲','👻','👾','🎃','🧛','🧟','🤡','👺','🐌','🦂','🕷️','🐺','🦁'];
+    const normalMonsters = ['👹','💀','👽','🤖','🐲','👻','👾','🎃','🧛','🧟','🤡','👺','🐌','コツ','🕷️','🐺','🦁'];
     const bossMonsters = ['👑','👹','🔥','💀','👿','🐲','👁️'];
 
     if(isGolden) {
@@ -199,12 +199,12 @@ function updateBiome() {
     const index = Math.min(Math.floor((stage - 1) / 10), biomeImages.length - 1);
     const imgName = biomeImages[index];
     
-    // Nastavení obrázku na pozadí s "cover" efektem pro mobily i PC
-    document.body.style.backgroundImage = `url('assets/backgrounds/${imgName}')`;
+    // Nastavení obrázku na pozadí (předpokládá, že obrázky jsou ve stejné složce jako index.html)
+    document.body.style.backgroundImage = `url('${imgName}')`;
     document.body.style.backgroundSize = 'cover';
     document.body.style.backgroundPosition = 'center';
     document.body.style.backgroundRepeat = 'no-repeat';
-    document.body.style.backgroundAttachment = 'fixed'; // Drží pozadí na místě při scrollu
+    document.body.style.backgroundAttachment = 'fixed';
 }
 
 window.buyTap = function() { 
