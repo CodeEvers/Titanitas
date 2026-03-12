@@ -167,7 +167,7 @@ function kill() {
     isGolden = Math.random() < 0.01;
     const m = document.getElementById('monster');
 
-    const normalMonsters = ['👹','💀','👽','🤖','🐲','👻','👾','🎃','🧛','🧟','🤡','👺','🐌','コツ','🕷️','🐺','🦁'];
+    const normalMonsters = ['👹','💀','👽','🤖','🐲','👻','👾','🎃','🧛','🧟','🤡','👺','🐌','🕷️','🐺','🦁'];
     const bossMonsters = ['👑','👹','🔥','💀','👿','🐲','👁️'];
 
     if(isGolden) {
@@ -448,3 +448,4 @@ window.onload = () => {
 };
 
 })(); // --- ZÁMEK KONEC ---
+
