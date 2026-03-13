@@ -46,8 +46,24 @@ function save() {
     return saveObj;
 }
 
-async function saveToCloud() {
+// Přidáno pro mráček
+let cloudTimer = 30;
+function updateCloudStatus(status) {
+    const el = document.getElementById('cloud-status');
+    if(!el) return;
+    if(status === 'saving') {
+        el.innerText = "☁️ Ukládám...";
+    } else if(status === 'done') {
+        el.innerText = "☁️ Uloženo!";
+        setTimeout(() => { cloudTimer = 30; }, 2000);
+    } else {
+        el.innerText = "☁️ Další uložení za " + cloudTimer + "s";
+    }
+}
+
+window.saveToCloud = async function() {
     if(!currentUser) return;
+    updateCloudStatus('saving');
     try {
         const fullData = save();
         await supabaseClient.from('leaderboard').upsert({
@@ -58,7 +74,11 @@ async function saveToCloud() {
             diamonds: diamonds,
             save_data: fullData 
         }, { onConflict: 'name' });
-    } catch (e) { console.error("Cloud save failed", e); }
+        updateCloudStatus('done');
+    } catch (e) { 
+        console.error("Cloud save failed", e); 
+        if(document.getElementById('cloud-status')) document.getElementById('cloud-status').innerText = "☁️ Chyba!";
+    }
 }
 
 // --- SYSTÉM PŘIHLÁŠENÍ ---
@@ -109,7 +129,7 @@ window.login = async function() {
         if(insErr) return alert("Chyba při registraci!");
         document.getElementById('login-modal').style.display = 'none';
         document.getElementById('user-display').innerText = "👤 " + u;
-        saveToCloud(); updateUI();
+        window.saveToCloud(); updateUI();
     }
 }
 
@@ -154,11 +174,11 @@ window.doTap = function(e) {
     createParticles(e.clientX, e.clientY);
     if(crit) { document.getElementById('game-area').classList.add('crit-shake'); setTimeout(() => document.getElementById('game-area').classList.remove('crit-shake'), 250); }
     document.getElementById('monster').style.transform = 'scale(0.85)'; setTimeout(() => document.getElementById('monster').style.transform = 'scale(1)', 50);
-    if(mCurr <= 0) kill();
+    if(mCurr <= 0) window.kill();
     updateUI();
 }
 
-function kill() {
+window.kill = function() {
     kills++; 
     let reward = (stage % 10 === 0 ? stage * 60 : stage * 6) * goldMult; 
     if(isGolden) reward *= 10;
@@ -366,14 +386,13 @@ function renderAchievements() {
 window.doResets = function() {
     if(stage < 50) return;
     let gain = Math.floor(stage / 10);
-    // ZMĚNA: Bonus se vypočítá z aktuálních resetů, tzn. při prvním resetu (resets=0) dostane 500 pro tu novou hru.
     let goldBonus = Math.floor(500 * Math.pow(1.2, resets));
     if(confirm(`VZESTUP: Získáš ${gain} 💎. Tvé jméno se posune v žebříčku a začneš znovu silnější!\n(Bonus do startu: ${goldBonus} 💰)`)) {
         diamonds += gain; 
-        resets++; // Zvýšíme úroveň prestiže
-        gold = goldBonus; // Nastavíme bonusové zlato
+        resets++; 
+        gold = goldBonus; 
         stage = 1; tapDmg = 1; tapCost = 10; hLv = [0,0,0,0,0];
-        setHP(); updateBiome(); updateUI(); window.closeM(); save(); saveToCloud();
+        setHP(); updateBiome(); updateUI(); window.closeM(); save(); window.saveToCloud();
     }
 }
 
@@ -426,20 +445,41 @@ window.collectLuckyDiamond = function() {
     alert(isGold ? `ŠTĚSTÍ! Našel jsi Zlatý diamant a získal ${gain} 💎!` : `Získal jsi 1 💎!`);
     container.style.display = 'none';
     container.dataset.status = 'waiting';
-    updateUI(); save(); saveToCloud();
+    updateUI(); save(); window.saveToCloud();
 };
 
 // --- SMYČKY ---
-setInterval(() => { if(totalDPS > 0 && currentUser) { mCurr -= totalDPS / 10; if(mCurr <= 0) kill(); updateUI(); } }, 100);
-setInterval(saveToCloud, 30000);
+setInterval(() => { if(totalDPS > 0 && currentUser) { mCurr -= totalDPS / 10; if(mCurr <= 0) window.kill(); updateUI(); } }, 100);
+setInterval(() => {
+    if(currentUser) {
+        cloudTimer--;
+        if(cloudTimer <= 0) { window.saveToCloud(); } else { updateCloudStatus(); }
+    }
+}, 1000);
 setInterval(checkLuckyDiamond, 10000);
 
-window.onload = () => {
+window.onload = async () => {
     if(currentUser) {
         document.getElementById('login-modal').style.display = 'none';
         document.getElementById('user-display').innerText = "👤 " + currentUser;
+
+        // Okamžitá synchronizace z Cloudu při startu
+        const { data: player } = await supabaseClient.from('leaderboard').select('save_data, diamonds').eq('name', currentUser).maybeSingle();
+        if (player && player.save_data) {
+            const s = player.save_data;
+            gold = s.gold; stage = s.stage; tapDmg = s.tapDmg; tapCost = s.tapCost;
+            hLv = s.hLv; resets = s.resets; inv = s.inv; eq = s.eq; 
+            shopItems = s.shopItems || []; clicks = s.clicks; kills = s.kills; maxStage = s.maxStage;
+            lastFreeRefresh = s.lastFreeRefresh || 0; lastLucky = s.lastLucky || 0;
+            diamonds = (player.diamonds !== undefined) ? player.diamonds : (s.diamonds || 0);
+            if(s.mCurr !== undefined) mCurr = s.mCurr;
+        } else if (raw.stage) {
+            gold = raw.gold; stage = raw.stage; tapDmg = raw.tapDmg; tapCost = raw.tapCost;
+            hLv = raw.hLv; resets = raw.resets; inv = raw.inv; eq = raw.eq; diamonds = raw.diamonds;
+            clicks = raw.clicks; kills = raw.kills; maxStage = raw.maxStage; mCurr = raw.mCurr || 10;
+        }
+
         setHP();
-        if(raw.mCurr !== undefined) mCurr = raw.mCurr;
         checkLuckyDiamond();
     } else {
         window.checkAuth();
@@ -448,4 +488,3 @@ window.onload = () => {
 };
 
 })(); // --- ZÁMEK KONEC ---
-
