@@ -404,7 +404,7 @@ function renderAchievements() {
 
 window.doResets = function() {
     if(stage < 50) return;
-    let gain = Math.floor(stage / 10);
+    let gain = Math.floor(stage / 10) + 5;
     let goldBonus = Math.floor(500 * Math.pow(1.2, resets));
     if(confirm(`VZESTUP: Získáš ${gain} 💎. Tvé jméno se posune v žebříčku a začneš znovu silnější!\n(Bonus do startu: ${goldBonus} 💰)`)) {
         diamonds += gain; 
